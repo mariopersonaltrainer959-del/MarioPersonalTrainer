@@ -1,0 +1,33 @@
+# Dependencias
+node_modules/
+
+# Base de datos
+*.db
+*.sqlite
+*.sqlite3
+database.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Variables de entorno
+.env
+.env.local
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Archivos temporales
+*.tmp
+*.temp
+
+# Imágenes subidas (landing)
+public/uploads/

@@ -1,0 +1,7 @@
+# Railway ignore - Ignorar archivos de otros proyectos
+../package-lock.json
+../package.json
+../../package-lock.json
+../../package.json
+../node_modules
+../../node_modules

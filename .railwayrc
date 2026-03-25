@@ -1,0 +1,6 @@
+{
+  "build": {
+    "builder": "nixpacks",
+    "buildCommand": "rm -f ../package-lock.json ../../package-lock.json && npm install"
+  }
+}

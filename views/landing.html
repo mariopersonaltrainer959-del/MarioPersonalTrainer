@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#2563eb">
+    <title>Reserva tu cita</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --primary-light: rgba(37, 99, 235, 0.12);
+            --card-radius: 14px;
+            --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+            --transition-fast: 0.2s ease;
+        }
+        body { font-family: 'Inter', system-ui, sans-serif; -webkit-text-size-adjust: 100%; padding-bottom: env(safe-area-inset-bottom, 0); }
+        [x-cloak] { display: none !important; }
+        .input-landing { width: 100%; padding: 0.75rem 1rem; min-height: 48px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 16px; transition: border-color var(--transition-fast), box-shadow var(--transition-fast); -webkit-appearance: none; appearance: none; }
+        .input-landing:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px var(--primary-light); }
+        select.input-landing { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1.25rem; padding-right: 2.5rem; }
+        .btn-reservar { background: var(--primary-color); color: #fff; padding: 0.875rem 1.5rem; min-height: 48px; border-radius: 12px; font-weight: 600; font-size: 1rem; border: none; cursor: pointer; transition: background var(--transition-fast), transform 0.15s ease; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        .btn-reservar:hover:not(:disabled) { background: var(--primary-hover); }
+        .btn-reservar:active:not(:disabled) { transform: scale(0.98); }
+        .btn-reservar:disabled { opacity: 0.6; cursor: not-allowed; }
+        .hero-image { width: 100%; max-height: 280px; object-fit: cover; border-radius: var(--card-radius); }
+        @media (min-width: 640px) { .hero-image { max-height: 320px; } }
+        .touch-target { min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
+        .safe-area-padding { padding-left: env(safe-area-inset-left, 0); padding-right: env(safe-area-inset-right, 0); }
+    </style>
+</head>
+<body class="bg-[#f8fafc] min-h-screen text-gray-800">
+    <div x-data="landingApp()" x-cloak x-init="init()">
+        <!-- Header -->
+        <header class="bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] safe-area-padding">
+            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+                <div class="flex justify-between items-center gap-3">
+                    <h1 class="text-lg sm:text-xl font-bold text-gray-900 truncate min-w-0" x-text="config.businessName || 'Consultorio'"></h1>
+                    <a :href="'tel:' + (config.businessPhone || '')" class="touch-target shrink-0 py-2 px-3 text-sm sm:text-base text-gray-600 hover:text-[var(--primary-color)] transition-colors rounded-lg -m-2" x-show="config.businessPhone" x-text="config.businessPhone"></a>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- Hero -->
+            <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+                <template x-if="landing.hero_image_url">
+                    <img :src="landing.hero_image_url" alt="" class="hero-image mb-8" @error="$el.style.display='none'">
+                </template>
+                <div class="text-center">
+                    <h2 class="text-2xl sm:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-1" x-text="landing.hero_title || 'Bienvenido'"></h2>
+                    <p class="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto whitespace-pre-line px-1" x-text="landing.hero_subtitle || 'Reserva tu cita de forma sencilla y rápida.'"></p>
+                    <a href="#reservar" class="btn-reservar w-full sm:w-auto inline-block mt-6 sm:mt-8 scroll-smooth" x-text="landing.cta_text || 'Reservar cita'"></a>
+                </div>
+            </section>
+
+            <!-- Sobre la consulta -->
+            <section class="bg-white py-12 sm:py-16" x-show="landing.about_title || landing.about_text">
+                <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-4" x-text="landing.about_title || 'Sobre la consulta'"></h3>
+                            <p class="text-gray-600 whitespace-pre-line leading-relaxed" x-text="landing.about_text"></p>
+                        </div>
+                        <template x-if="landing.about_image_url">
+                            <img :src="landing.about_image_url" alt="" class="rounded-[var(--card-radius)] shadow-[var(--shadow-card)] w-full object-cover max-h-72" @error="$el.style.display='none'">
+                        </template>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Reserva -->
+            <section id="reservar" class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 scroll-mt-6 sm:scroll-mt-8">
+                <div class="bg-white rounded-[var(--card-radius)] shadow-[var(--shadow-card)] p-4 sm:p-8">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Reservar cita</h3>
+                    <p class="text-gray-600 mb-6">Completa tus datos y elige fecha y hora. Solo se crean citas reales; recibirás confirmación por email.</p>
+
+                    <form @submit.prevent="bookAppointment()" class="space-y-5">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nombre completo *</label>
+                            <input type="text" id="name" x-model="form.name" required minlength="2" maxlength="120"
+                                   class="input-landing" placeholder="Tu nombre">
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                            <input type="email" id="email" x-model="form.email" required
+                                   class="input-landing" placeholder="tu@email.com">
+                        </div>
+                        <div>
+                            <label for="telefono" class="block text-sm font-medium text-gray-700 mb-1">Teléfono (recomendado para confirmaciones)</label>
+                            <input type="tel" id="telefono" x-model="form.telefono"
+                                   class="input-landing" placeholder="612 345 678">
+                        </div>
+                        <div>
+                            <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Fecha *</label>
+                            <input type="date" id="date" x-model="form.date" @change="loadSlots()" :min="minDate" required
+                                   class="input-landing">
+                        </div>
+                        <div>
+                            <label for="time" class="block text-sm font-medium text-gray-700 mb-1">Hora disponible *</label>
+                            <select id="time" x-model="form.time" required
+                                    :disabled="!form.date || loadingSlots || availableSlots.length === 0"
+                                    class="input-landing disabled:bg-gray-50 disabled:cursor-not-allowed">
+                                <option value="">Selecciona una hora</option>
+                                <template x-for="slot in availableSlots" :key="slot.time">
+                                    <option :value="slot.time" x-text="slot.display"></option>
+                                </template>
+                            </select>
+                            <p x-show="loadingSlots" class="mt-1 text-sm text-gray-500">Cargando horarios...</p>
+                            <p x-show="form.date && !loadingSlots && availableSlots.length === 0" class="mt-1 text-sm text-amber-600">No hay huecos para esta fecha. Elige otra.</p>
+                        </div>
+
+                        <div class="flex items-start gap-3 py-1">
+                            <input type="checkbox" id="acepta_legal" x-model="form.acepta_legal" required
+                                   class="mt-1.5 h-5 w-5 shrink-0 rounded border-gray-300 text-[var(--primary-color)] focus:ring-[var(--primary-color)]">
+                            <label for="acepta_legal" class="text-sm text-gray-700 cursor-pointer select-none">
+                                Acepto la <a href="#" @click.prevent="showPolitica = true" class="text-[var(--primary-color)] font-medium hover:underline">política de privacidad</a> y el consentimiento para el tratamiento de mis datos (obligatorio para reservar).
+                            </label>
+                        </div>
+
+                        <button type="submit" :disabled="submitting" class="btn-reservar w-full py-3 text-lg">
+                            <span x-show="!submitting">Confirmar reserva</span>
+                            <span x-show="submitting">Reservando...</span>
+                        </button>
+
+                        <p x-show="error" class="text-sm text-red-600 bg-red-50 px-4 py-3 rounded-lg" x-text="error"></p>
+                        <p x-show="success" class="text-sm text-green-700 bg-green-50 px-4 py-3 rounded-lg" x-text="success"></p>
+                    </form>
+                </div>
+
+                <div class="mt-8 bg-slate-50 rounded-[var(--card-radius)] p-5 text-sm text-gray-600">
+                    <p class="font-medium text-gray-800 mb-2">Información</p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li>Recibirás un email de confirmación con los detalles de tu cita.</li>
+                        <li>Para modificar o cancelar, contacta con al menos 24 h de antelación.</li>
+                    </ul>
+                </div>
+            </section>
+        </main>
+
+        <!-- Modal política -->
+        <div x-show="showPolitica" x-cloak class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4" @keydown.escape.window="showPolitica = false">
+            <div class="bg-white rounded-t-2xl sm:rounded-[var(--card-radius)] shadow-xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-5 sm:p-6 safe-area-padding">
+                <h3 class="text-xl font-bold mb-4">Política de privacidad y consentimiento</h3>
+                <div class="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap" x-html="textosLegalesHtml()"></div>
+                <button @click="showPolitica = false" class="mt-4 w-full sm:w-auto min-h-[44px] px-4 py-3 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors">Cerrar</button>
+            </div>
+        </div>
+
+        <footer class="bg-white border-t border-gray-100 mt-12 sm:mt-16 safe-area-padding">
+            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 text-center text-gray-600 text-sm">
+                <p class="font-medium text-gray-900" x-text="config.businessName || ''"></p>
+                <p class="mt-1">
+                    <a :href="'mailto:' + (config.businessEmail || '')" class="text-[var(--primary-color)] hover:underline" x-text="config.businessEmail || ''"></a>
+                </p>
+                <p x-show="config.businessPhone" class="mt-1">
+                    <a :href="'tel:' + (config.businessPhone || '')" class="text-[var(--primary-color)] hover:underline" x-text="config.businessPhone"></a>
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script>
+        function landingApp() {
+            return {
+                config: { businessName: '', businessPhone: '', businessEmail: '' },
+                landing: { hero_title: '', hero_subtitle: '', hero_image_url: '', about_title: '', about_text: '', about_image_url: '', cta_text: 'Reservar cita', sections: [] },
+                form: { name: '', email: '', telefono: '', date: '', time: '', acepta_legal: false },
+                showPolitica: false,
+                textosLegales: { politica_privacidad: '', consentimiento: '' },
+                availableSlots: [],
+                loadingSlots: false,
+                submitting: false,
+                error: '',
+                success: '',
+                minDate: new Date().toISOString().split('T')[0],
+
+                async init() {
+                    await Promise.all([this.loadConfig(), this.loadLanding(), this.loadTextosLegales()]);
+                },
+
+                async loadConfig() {
+                    try {
+                        const r = await fetch('/api/config');
+                        this.config = await r.json();
+                    } catch (e) {}
+                },
+
+                async loadLanding() {
+                    try {
+                        const r = await fetch('/api/landing');
+                        this.landing = await r.json();
+                    } catch (e) {}
+                },
+
+                async loadTextosLegales() {
+                    try {
+                        const r = await fetch('/api/textos-legales');
+                        this.textosLegales = await r.json();
+                    } catch (e) {}
+                },
+
+                textosLegalesHtml() {
+                    const p = (this.textosLegales.politica_privacidad || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+                    const c = (this.textosLegales.consentimiento || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+                    if (!p && !c) return '<p class="text-gray-500">Al reservar aceptas el tratamiento de tus datos para gestionar la cita.</p>';
+                    return (p ? '<h4>Política de privacidad</h4><p>' + p + '</p>' : '') + (c ? '<h4 class="mt-4">Consentimiento</h4><p>' + c + '</p>' : '');
+                },
+
+                async loadSlots() {
+                    if (!this.form.date) { this.availableSlots = []; this.form.time = ''; return; }
+                    this.loadingSlots = true;
+                    this.form.time = '';
+                    this.error = '';
+                    try {
+                        const r = await fetch('/api/available-slots?date=' + encodeURIComponent(this.form.date));
+                        const data = await r.json();
+                        this.availableSlots = data.slots || [];
+                    } catch (e) {
+                        this.availableSlots = [];
+                    } finally {
+                        this.loadingSlots = false;
+                    }
+                },
+
+                async bookAppointment() {
+                    this.submitting = true;
+                    this.error = '';
+                    this.success = '';
+
+                    const name = (this.form.name || '').trim();
+                    if (name.length < 2) {
+                        this.error = 'El nombre debe tener al menos 2 caracteres.';
+                        this.submitting = false;
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/api/book', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                name: name,
+                                email: (this.form.email || '').trim().toLowerCase(),
+                                telefono: (this.form.telefono || '').trim() || undefined,
+                                date: this.form.date,
+                                time: this.form.time,
+                                acepta_legal: !!this.form.acepta_legal
+                            })
+                        });
+                        const data = await response.json();
+
+                        if (data.error) {
+                            this.error = data.error;
+                        } else {
+                            this.success = data.message || 'Cita reservada correctamente. Revisa tu email.';
+                            this.form = { name: '', email: '', telefono: '', date: '', time: '', acepta_legal: false };
+                            this.availableSlots = [];
+                        }
+                    } catch (e) {
+                        this.error = 'Error al reservar. Intenta de nuevo.';
+                    } finally {
+                        this.submitting = false;
+                    }
+                }
+            };
+        }
+    </script>
+</body>
+</html>

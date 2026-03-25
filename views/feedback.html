@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Valorar experiencia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --primary: #2563eb; --primary-hover: #1d4ed8; }
+    * { box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; margin: 0; padding: 24px; min-height: 100vh; background: #f8fafc; display: flex; align-items: center; justify-content: center; }
+    .card { background: #fff; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04); max-width: 440px; width: 100%; padding: 32px; }
+    h1 { font-size: 1.35rem; font-weight: 700; color: #1e293b; margin: 0 0 24px; text-align: center; }
+    .stars { display: flex; gap: 8px; justify-content: center; margin-bottom: 24px; }
+    .star { font-size: 2rem; color: #cbd5e1; cursor: pointer; transition: color 0.15s, transform 0.1s; user-select: none; }
+    .star:hover { transform: scale(1.1); }
+    .star.filled { color: #fbbf24; }
+    .star.readonly { cursor: default; }
+    .msg { text-align: center; color: #475569; font-size: 0.9375rem; line-height: 1.5; margin-bottom: 20px; }
+    .msg.thanks { color: #166534; }
+    .msg.sorry { color: #991b1b; }
+    .btn { display: inline-block; background: var(--primary); color: #fff; padding: 12px 24px; border-radius: 10px; font-weight: 500; text-decoration: none; border: none; cursor: pointer; font-size: 1rem; width: 100%; text-align: center; transition: background 0.2s; }
+    .btn:hover { background: var(--primary-hover); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    textarea { width: 100%; min-height: 100px; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; font-family: inherit; font-size: 0.9375rem; resize: vertical; }
+    textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
+    .error { color: #dc2626; font-size: 0.875rem; margin-top: 8px; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1 id="title">¿Cómo valorarías tu experiencia?</h1>
+    <div id="loading" class="msg">Cargando…</div>
+    <div id="invalid" class="msg error hidden">Sesión no encontrada o enlace no válido.</div>
+    <div id="already" class="msg hidden">Ya has enviado tu valoración. Gracias.</div>
+
+    <div id="stepStars" class="hidden">
+      <div class="stars" id="starsWrap">
+        <span class="star" data-rating="1" aria-label="1 estrella">★</span>
+        <span class="star" data-rating="2" aria-label="2 estrellas">★</span>
+        <span class="star" data-rating="3" aria-label="3 estrellas">★</span>
+        <span class="star" data-rating="4" aria-label="4 estrellas">★</span>
+        <span class="star" data-rating="5" aria-label="5 estrellas">★</span>
+      </div>
+    </div>
+
+    <div id="stepHigh" class="hidden">
+      <p class="msg thanks">¡Gracias por tu confianza!</p>
+      <p class="msg">Si te apetece, puedes compartir tu experiencia en Google para ayudar a otras personas que estén buscando apoyo profesional.</p>
+      <a id="btnGoogle" href="#" class="btn">Dejar reseña en Google</a>
+    </div>
+
+    <div id="stepLow" class="hidden">
+      <p class="msg sorry">Lamentamos que tu experiencia no haya sido perfecta. Tu opinión nos ayuda a mejorar.</p>
+      <form id="formLow">
+        <textarea id="comentario" placeholder="Comentario (opcional)" required></textarea>
+        <p id="formError" class="error hidden"></p>
+        <button type="submit" class="btn" style="margin-top: 16px;">Enviar</button>
+      </form>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var path = window.location.pathname.replace(/\/$/, '');
+      var parts = path.split('/');
+      var sessionId = parts[parts.length - 1];
+      if (!sessionId || sessionId === 'feedback') { show('invalid'); hide('loading'); return; }
+
+      var data = { valid: false, googleReviewUrl: null, alreadySubmitted: false };
+      var selectedRating = 0;
+      var baseUrl = window.location.origin;
+
+      function show(id) { document.getElementById(id).classList.remove('hidden'); }
+      function hide(id) { document.getElementById(id).classList.add('hidden'); }
+
+      fetch(baseUrl + '/api/feedback/' + sessionId)
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          data = d;
+          hide('loading');
+          if (!d.valid) { show('invalid'); return; }
+          if (d.alreadySubmitted) { show('already'); return; }
+          show('stepStars');
+        })
+        .catch(function () { hide('loading'); show('invalid'); });
+
+      document.getElementById('starsWrap').addEventListener('click', function (e) {
+        var star = e.target.closest('.star');
+        if (!star) return;
+        selectedRating = parseInt(star.getAttribute('data-rating'), 10);
+        document.querySelectorAll('.star').forEach(function (s, i) {
+          s.classList.toggle('filled', i + 1 <= selectedRating);
+        });
+        if (selectedRating >= 4) {
+          document.querySelectorAll('#starsWrap .star').forEach(function (s) { s.classList.add('readonly'); });
+          fetch(baseUrl + '/api/feedback/' + sessionId, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rating: selectedRating })
+          }).then(function () {
+            hide('stepStars');
+            show('stepHigh');
+            document.getElementById('btnGoogle').href = baseUrl + '/feedback/' + sessionId + '/dejar-resena-google';
+          }).catch(function () {
+            hide('stepStars');
+            show('stepHigh');
+            document.getElementById('btnGoogle').href = baseUrl + '/feedback/' + sessionId + '/dejar-resena-google';
+          });
+        } else if (selectedRating >= 1) {
+          hide('stepStars');
+          show('stepLow');
+        }
+      });
+
+      document.getElementById('formLow').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var comentario = document.getElementById('comentario').value.trim();
+        var errEl = document.getElementById('formError');
+        errEl.classList.add('hidden');
+        fetch(baseUrl + '/api/feedback/' + sessionId, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rating: selectedRating, comentario: comentario || null })
+        })
+          .then(function (r) {
+            if (r.ok) {
+              document.getElementById('stepLow').innerHTML = '<p class="msg thanks">Gracias por tu opinión. Nos ayuda a mejorar.</p>';
+            } else {
+              return r.json().then(function (d) { throw new Error(d.error || 'Error'); });
+            }
+          })
+          .catch(function (err) {
+            errEl.textContent = err.message || 'Error al enviar';
+            errEl.classList.remove('hidden');
+          });
+      });
+    })();
+  </script>
+</body>
+</html>

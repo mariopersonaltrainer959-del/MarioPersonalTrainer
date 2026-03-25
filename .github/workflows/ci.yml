@@ -1,0 +1,69 @@
+name: CI - Build and Test
+
+on:
+  push:
+    branches: [ main, master, development ]
+  pull_request:
+    branches: [ main, master, development ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - name: 📥 Checkout código
+      uses: actions/checkout@v4
+    
+    - name: 📦 Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: 📥 Instalar dependencias
+      run: npm ci
+    
+    - name: 🔍 Verificar sintaxis
+      run: |
+        echo "Verificando sintaxis de archivos principales..."
+        node -c server.js
+        node -c database/init.js
+        node -c utils/db.js
+        node -c utils/email.js
+        node -c utils/helpers.js
+        node -c routes/public.js
+        node -c routes/auth.js
+        node -c routes/dashboard.js
+    
+    - name: 🗄️ Inicializar base de datos (test)
+      run: |
+        node database/init.js
+        echo "✅ Base de datos inicializada correctamente"
+    
+    - name: ✅ Verificar estructura del proyecto
+      run: |
+        echo "Verificando estructura de archivos..."
+        test -f server.js && echo "✅ server.js existe"
+        test -f config.js && echo "✅ config.js existe"
+        test -f package.json && echo "✅ package.json existe"
+        test -d routes && echo "✅ carpeta routes existe"
+        test -d views && echo "✅ carpeta views existe"
+        test -d utils && echo "✅ carpeta utils existe"
+        test -d database && echo "✅ carpeta database existe"
+        test -f views/index.html && echo "✅ index.html existe"
+        test -f views/dashboard.html && echo "✅ dashboard.html existe"
+        test -f views/login.html && echo "✅ login.html existe"
+    
+    - name: 📊 Resumen
+      run: |
+        echo "## 📦 Resumen del Build" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "✅ Todas las verificaciones pasaron correctamente" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Node.js version:** ${{ matrix.node-version }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY

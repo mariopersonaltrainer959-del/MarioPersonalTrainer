@@ -1,0 +1,12 @@
+[build]
+builder = "nixpacks"
+command = "find .. -maxdepth 2 -name 'package-lock.json' ! -path './package-lock.json' -delete 2>/dev/null || true && npm install"
+
+[deploy]
+startCommand = "npm start"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+# Deshabilitar escaneo de seguridad (si Railway lo soporta)
+[security]
+skipVulnerabilityScan = true

@@ -1,0 +1,36 @@
+name: 🚀 Deploy Status
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  deploy-status:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    
+    steps:
+    - name: 📥 Checkout código
+      uses: actions/checkout@v4
+    
+    - name: 📊 Información del despliegue
+      run: |
+        echo "## 🚀 Estado del Despliegue" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Autor:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Mensaje:** ${{ github.event.head_commit.message }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "✅ Código pusheado correctamente" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "🔗 Si tienes Railway conectado, el despliegue debería iniciarse automáticamente." >> $GITHUB_STEP_SUMMARY
+    
+    - name: 📝 Listar archivos modificados
+      run: |
+        echo "## 📝 Archivos modificados" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        git diff --name-only ${{ github.event.before }} ${{ github.sha }} | head -20 | while read file; do
+          echo "- \`$file\`" >> $GITHUB_STEP_SUMMARY
+        done

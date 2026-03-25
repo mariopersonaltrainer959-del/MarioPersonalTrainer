@@ -1,0 +1,1960 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#2563eb">
+    <title>Dashboard - Gestión de Citas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --primary-light: rgba(37, 99, 235, 0.12);
+            --card-radius: 14px;
+            --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+            --shadow-card-hover: 0 4px 12px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06);
+            --transition-fast: 0.2s ease;
+            --transition-smooth: 0.25s ease;
+        }
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        [x-cloak] { display: none !important; }
+
+        /* Cards */
+        .card { border-radius: var(--card-radius); box-shadow: var(--shadow-card); transition: box-shadow var(--transition-smooth), transform var(--transition-fast); }
+        .card:hover { box-shadow: var(--shadow-card-hover); }
+        .card-body { padding: 1.35rem 1.5rem; }
+
+        /* Botones */
+        .btn-primary { background: var(--primary-color); color: #fff; border-radius: 10px; padding: 0.5rem 1rem; min-height: 44px; font-weight: 500; transition: background var(--transition-fast), transform 0.15s ease; border: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+        .btn-primary:active:not(:disabled) { transform: scale(0.98); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-secondary { background: #f1f5f9; color: #334155; border-radius: 10px; padding: 0.5rem 1rem; min-height: 44px; font-weight: 500; transition: background var(--transition-fast), color var(--transition-fast); border: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        .btn-secondary:hover { background: #e2e8f0; color: #1e293b; }
+        .btn-ghost { color: var(--primary-color); background: transparent; border: none; padding: 0.5rem 0.75rem; font-weight: 500; border-radius: 8px; transition: background var(--transition-fast); }
+        .btn-ghost:hover { background: var(--primary-light); }
+        .btn-link { background: none; border: none; cursor: pointer; padding: 0; font-size: inherit; color: var(--primary-color); font-weight: 500; transition: opacity var(--transition-fast); }
+        .btn-link:hover { opacity: 0.85; text-decoration: underline; }
+
+        /* Inputs */
+        .input-modern { width: 100%; padding: 0.5rem 1rem; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 0.9375rem; transition: border-color var(--transition-fast), box-shadow var(--transition-fast); }
+        .input-modern:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px var(--primary-light); }
+        .input-modern::placeholder { color: #94a3b8; }
+        select.input-modern { cursor: pointer; appearance: auto; }
+        textarea.input-modern { min-height: 2.5rem; resize: vertical; }
+
+        /* Navegación */
+        .nav-tab { padding: 0.875rem 1rem; font-weight: 500; border-radius: 10px; margin: 0 2px; color: #64748b; transition: background var(--transition-fast), color var(--transition-fast); border: none; background: transparent; cursor: pointer; }
+        .nav-tab:hover { color: #1e293b; background: #f1f5f9; }
+        .nav-tab-active { color: var(--primary-color); background: var(--primary-light); }
+        .nav-tab-active:hover { color: var(--primary-hover); background: var(--primary-light); }
+
+        /* Badges estado */
+        .badge { display: inline-block; padding: 0.25rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 500; }
+        .badge-confirmada { background: #dcfce7; color: #166534; }
+        .badge-cancelada { background: #fee2e2; color: #991b1b; }
+        .badge-pendiente { background: #fef9c3; color: #854d0e; }
+        .badge-pasada { background: #f1f5f9; color: #475569; }
+        .badge-no-asistio { background: #ffedd5; color: #9a3412; }
+        .badge-completada { background: #ccfbf1; color: #0f766e; }
+
+        /* Tablas */
+        .table-modern { border-collapse: separate; border-spacing: 0; }
+        .table-modern thead th { background: #f8fafc; font-weight: 600; color: #475569; font-size: 0.8125rem; padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        .table-modern tbody tr { transition: background var(--transition-fast); }
+        .table-modern tbody tr:hover { background: #f8fafc; }
+        .table-modern tbody td { padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9; font-size: 0.875rem; }
+        .table-modern tbody td a, .table-modern tbody td .btn-link { color: var(--primary-color); font-weight: 500; }
+        .table-modern tbody td a:hover, .table-modern tbody td .btn-link:hover { text-decoration: underline; }
+
+        /* Animación entrada */
+        .fade-in { animation: fadeIn 0.35s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in-delay-1 { animation-delay: 0.05s; opacity: 0; }
+        .fade-in-delay-2 { animation-delay: 0.1s; opacity: 0; }
+        .fade-in-delay-3 { animation-delay: 0.15s; opacity: 0; }
+        .fade-in-delay-4 { animation-delay: 0.2s; opacity: 0; }
+
+        /* Header */
+        .header-brand-initial { width: 42px; height: 42px; border-radius: 12px; background: var(--primary-color); color: #fff; font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        @media (max-width: 640px) { .header-brand-initial { width: 36px; height: 36px; font-size: 1rem; } }
+        .safe-area-padding { padding-left: env(safe-area-inset-left, 0); padding-right: env(safe-area-inset-right, 0); }
+        /* Móvil: navegación con scroll horizontal */
+        .nav-tabs-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .nav-tabs-wrap::-webkit-scrollbar { display: none; }
+        .nav-tab { white-space: nowrap; min-height: 44px; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        @media (max-width: 640px) {
+            .table-modern thead th, .table-modern tbody td { padding: 0.5rem 0.75rem; font-size: 0.8125rem; }
+            .card-body { padding: 1rem 1.25rem; }
+        }
+        .modal-mobile { max-height: 90vh; overflow-y: auto; }
+        @media (max-width: 640px) {
+            .modal-mobile { border-radius: 1rem 1rem 0 0; margin: 0; max-height: 92vh; }
+        }
+        body { padding-bottom: env(safe-area-inset-bottom, 0); -webkit-text-size-adjust: 100%; }
+    </style>
+</head>
+<body class="bg-[#f8fafc] min-h-screen">
+    <div x-data="dashboard()" x-cloak x-init="init()">
+        <!-- Header profesional -->
+        <header class="bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] sticky top-0 z-40 safe-area-padding">
+            <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
+                <div class="flex justify-between items-center gap-3">
+                    <div class="flex items-center gap-3 sm:gap-4 min-w-0">
+                        <template x-if="negocio.logo_url">
+                            <img :src="negocio.logo_url" alt="Logo" class="h-9 w-9 sm:h-10 sm:w-10 object-contain rounded-xl flex-shrink-0">
+                        </template>
+                        <template x-if="!negocio.logo_url">
+                            <div class="header-brand-initial" x-text="(config.businessName || negocio.nombre || 'M').charAt(0).toUpperCase()"></div>
+                        </template>
+                        <div class="min-w-0">
+                            <h1 class="text-base sm:text-xl font-bold text-gray-900 truncate" x-text="config.businessName || negocio.nombre || 'Panel de gestión'"></h1>
+                            <p class="text-xs sm:text-sm text-gray-500 hidden sm:block" x-show="config.businessName || negocio.nombre">Panel de gestión</p>
+                        </div>
+                    </div>
+                    <button @click="logout()" class="btn-ghost text-gray-600 hover:text-gray-900 flex-shrink-0 min-h-[44px] py-2 px-3 text-sm sm:text-base">Cerrar sesión</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navegación -->
+        <div class="bg-white border-b border-gray-100 safe-area-padding">
+            <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+                <nav class="nav-tabs-wrap flex gap-1 py-2">
+                    <button @click="activeTab = 'inicio'; loadStats()" class="nav-tab" :class="activeTab === 'inicio' && 'nav-tab-active'">Inicio</button>
+                    <button @click="activeTab = 'appointments'" class="nav-tab" :class="activeTab === 'appointments' && 'nav-tab-active'">Citas</button>
+                    <button @click="activeTab = 'pacientes'; loadPacientes()" class="nav-tab" :class="activeTab === 'pacientes' && 'nav-tab-active'">Pacientes</button>
+                    <button @click="activeTab = 'landing'; loadLanding()" class="nav-tab" :class="activeTab === 'landing' && 'nav-tab-active'">Landing</button>
+                    <button @click="activeTab = 'facturas'; loadFacturas()" class="nav-tab" :class="activeTab === 'facturas' && 'nav-tab-active'">Facturas</button>
+                    <button @click="activeTab = 'reputacion'; loadReputacion()" class="nav-tab" :class="activeTab === 'reputacion' && 'nav-tab-active'">Reputación</button>
+                    <button @click="activeTab = 'config'" class="nav-tab" :class="activeTab === 'config' && 'nav-tab-active'">Configuración</button>
+                    <button @click="activeTab = 'hours'" class="nav-tab" :class="activeTab === 'hours' && 'nav-tab-active'">Horarios</button>
+                    <button @click="activeTab = 'blocked'" class="nav-tab" :class="activeTab === 'blocked' && 'nav-tab-active'">Bloqueos</button>
+                    <button @click="activeTab = 'users'" class="nav-tab" :class="activeTab === 'users' && 'nav-tab-active'">Usuarios</button>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-8">
+            <!-- Tab: Inicio (estadísticas) -->
+            <div x-show="activeTab === 'inicio'" class="fade-in">
+                <p class="text-lg text-gray-700 mb-6" x-show="config.businessName || negocio.nombre">Bienvenido, <span class="font-semibold text-gray-900" x-text="config.businessName || negocio.nombre || ''"></span></p>
+                <p class="text-lg text-gray-700 mb-6" x-show="!config.businessName && !negocio.nombre">Resumen de tu consulta este mes</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+                    <div class="card bg-white fade-in fade-in-delay-1">
+                        <div class="card-body flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-[var(--primary-color)] bg-[var(--primary-light)]" aria-hidden="true">📅</div>
+                            <div class="min-w-0">
+                                <h3 class="text-sm font-medium text-gray-500">Sesiones este mes</h3>
+                                <p class="text-2xl font-bold text-gray-900 mt-0.5" x-text="stats.sesionesRealizadas ?? '—'"></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card bg-white fade-in fade-in-delay-2">
+                        <div class="card-body flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-[var(--primary-color)] bg-[var(--primary-light)]" aria-hidden="true">€</div>
+                            <div class="min-w-0">
+                                <h3 class="text-sm font-medium text-gray-500">Facturación estimada (€)</h3>
+                                <p class="text-2xl font-bold text-gray-900 mt-0.5" x-text="stats.facturacionEstimada ?? '—'"></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card bg-white fade-in fade-in-delay-3">
+                        <div class="card-body flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-red-600 bg-red-50" aria-hidden="true">✕</div>
+                            <div class="min-w-0">
+                                <h3 class="text-sm font-medium text-gray-500">Cancelaciones</h3>
+                                <p class="text-2xl font-bold text-gray-900 mt-0.5" x-text="stats.cancelaciones ?? '—'"></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card bg-white fade-in fade-in-delay-4">
+                        <div class="card-body flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-emerald-600 bg-emerald-50" aria-hidden="true">👥</div>
+                            <div class="min-w-0">
+                                <h3 class="text-sm font-medium text-gray-500">Pacientes activos (mes)</h3>
+                                <p class="text-2xl font-bold text-gray-900 mt-0.5" x-text="stats.pacientesActivos ?? '—'"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-500" x-show="stats.periodo">Periodo: <span x-text="stats.periodo ? (stats.periodo.inicio + ' a ' + stats.periodo.fin) : ''"></span></p>
+            </div>
+
+            <!-- Tab: Appointments -->
+            <div x-show="activeTab === 'appointments'">
+                <div class="card bg-white p-4 sm:p-6">
+                    <div class="flex flex-col sm:flex-row sm:flex-wrap sm:justify-between sm:items-center gap-3 mb-5 sm:mb-6">
+                        <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Citas</h2>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button @click="openModalCita()" class="btn-primary text-sm sm:text-base">+ Crear cita</button>
+                            <button @click="appointmentViewMode = appointmentViewMode === 'calendar' ? 'list' : 'calendar'" class="btn-secondary text-sm" x-text="appointmentViewMode === 'calendar' ? 'Vista lista' : 'Vista calendario'"></button>
+                            <button @click="loadCitas()" class="btn-ghost min-h-[44px] text-sm">Actualizar</button>
+                        </div>
+                    </div>
+
+                    <!-- Vista calendario semanal -->
+                    <div x-show="appointmentViewMode === 'calendar'" class="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                        <div class="flex flex-wrap gap-2 items-center mb-3 sm:mb-4">
+                            <div class="flex gap-2 flex-wrap">
+                                <button @click="prevWeek()" class="btn-secondary text-xs sm:text-sm py-2">← Anterior</button>
+                                <button @click="goToToday()" class="btn-secondary text-xs sm:text-sm py-2">Hoy</button>
+                                <button @click="nextWeek()" class="btn-secondary text-xs sm:text-sm py-2">Siguiente →</button>
+                            </div>
+                            <h3 class="font-semibold text-gray-800 text-sm sm:text-base" x-text="getCalendarWeekLabel()"></h3>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-2">Leyenda: <span class="badge badge-confirmada">confirmada</span> <span class="badge badge-completada">completada</span> <span class="badge badge-pasada">pasada</span> <span class="badge badge-cancelada">cancelada</span> <span class="badge badge-pendiente">pendiente</span> <span class="badge badge-no-asistio">no asistió</span></p>
+                        <table class="w-full border border-gray-200 text-sm" style="min-width: 800px;">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="border border-gray-200 p-2 w-14">Hora</th>
+                                    <template x-for="(day, i) in getCalendarWeekDays()" :key="i">
+                                        <th class="border border-gray-200 p-2" x-text="day.label"></th>
+                                    </template>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="hour in getCalendarHours()" :key="hour">
+                                    <tr>
+                                        <td class="border border-gray-200 p-1 text-gray-600 align-top" x-text="String(hour).padStart(2,'0') + ':00'"></td>
+                                        <template x-for="(day, di) in getCalendarWeekDays()" :key="di">
+                                            <td class="border border-gray-200 p-1 align-top min-w-[120px]">
+                                                <template x-for="c in getCitasInCell(day.date, hour)" :key="c.id">
+                                                    <div class="text-xs rounded p-2 mb-1 border cursor-pointer"
+                                                         :class="c.estado === 'confirmada' ? 'bg-emerald-50 border-emerald-200' : c.estado === 'completada' ? 'bg-teal-50 border-teal-200' : c.estado === 'pasada' ? 'bg-slate-100 border-slate-200' : c.estado === 'cancelada' ? 'bg-red-50 border-red-200' : c.estado === 'pendiente' ? 'bg-amber-50 border-amber-200' : 'bg-orange-50 border-orange-200'"
+                                                         :title="(c.paciente_nombre || '') + (c.paciente_telefono ? ' · Tel: ' + c.paciente_telefono : '') + (c.tipo_sesion ? ' · ' + c.tipo_sesion : '')"
+                                                         @click="openModalCita(c)">
+                                                        <div class="font-medium text-gray-900" x-text="c.paciente_nombre"></div>
+                                                        <div class="text-gray-600" x-text="c.hora_inicio"></div>
+                                                        <div x-show="c.paciente_telefono" class="text-gray-500 truncate" x-text="c.paciente_telefono"></div>
+                                                        <div x-show="c.tipo_sesion" class="text-gray-500" x-text="c.tipo_sesion"></div>
+                                                        <button @click.stop="openDeleteModal(c)" class="mt-1 text-red-600 hover:underline">Eliminar</button>
+                                                    </div>
+                                                </template>
+                                            </td>
+                                        </template>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Vista lista (filtros solo en lista) -->
+                    <div x-show="appointmentViewMode === 'list'">
+                        <div class="mb-4 flex gap-4">
+                            <input type="date" x-model="filters.startDate" @change="loadCitas()" class="input-modern" placeholder="Fecha inicio">
+                            <input type="date" x-model="filters.endDate" @change="loadCitas()" class="input-modern" placeholder="Fecha fin">
+                        </div>
+                        <div class="space-y-4">
+                            <template x-for="c in citas" :key="c.id">
+                                <div class="card bg-white p-4 hover:bg-gray-50/80">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h3 class="font-semibold text-gray-900" x-text="c.paciente_nombre"></h3>
+                                            <p class="text-sm text-gray-600" x-text="c.paciente_email"></p>
+                                            <p x-show="c.paciente_telefono" class="text-sm text-gray-600" x-text="'Tel: ' + c.paciente_telefono"></p>
+                                            <p class="text-sm text-gray-600 mt-1"><span x-text="formatCitaFecha(c.fecha)"></span> <span x-text="c.hora_inicio"></span> - <span x-text="c.hora_fin"></span></p>
+                                            <p class="text-xs mt-1"><span class="badge" :class="c.estado === 'confirmada' ? 'badge-confirmada' : c.estado === 'completada' ? 'badge-completada' : c.estado === 'pasada' ? 'badge-pasada' : c.estado === 'cancelada' ? 'badge-cancelada' : c.estado === 'pendiente' ? 'badge-pendiente' : 'badge-no-asistio'" x-text="c.estado"></span> <span x-show="c.tipo_sesion" x-text="' · ' + c.tipo_sesion"></span></p>
+                                        </div>
+                                        <div>
+                                            <button @click="openModalCita(c)" class="text-blue-600 hover:underline mr-2">Editar</button>
+                                            <button @click="openDeleteModal(c)" class="text-red-600 hover:text-red-700 text-sm font-medium">Eliminar</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            <p x-show="citas.length === 0" class="text-gray-500 text-center py-8">No hay citas en este rango de fechas</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal crear/editar cita -->
+                <div x-show="modalCita.show" x-cloak class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4" @keydown.escape.window="modalCita.show = false">
+                    <div class="modal-mobile bg-white rounded-t-xl sm:rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+                        <h3 class="text-xl font-bold mb-4" x-text="modalCita.id ? 'Editar cita' : 'Nueva cita'"></h3>
+                        <form @submit.prevent="saveModalCita()" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Paciente *</label>
+                                <select x-model="modalCita.paciente_id" class="input-modern" required :disabled="!!modalCita.id">
+                                    <option value="">Selecciona paciente</option>
+                                    <template x-for="p in listaPacientesParaCita" :key="p.id">
+                                        <option :value="p.id" x-text="p.nombre + ' (' + p.email + ')'"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Fecha *</label><input type="date" x-model="modalCita.fecha" @change="loadSlotsCitaModal()" :min="getMinDateForNew()" class="input-modern" required></div>
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Hora *</label><select x-model="modalCita.hora_inicio" @change="setHoraFinFromSlot()" class="input-modern" required :disabled="!modalCita.fecha || slotsCitaModal.length === 0">
+                                    <option value="">Elegir</option>
+                                    <template x-for="s in slotsCitaModal" :key="s.hora_inicio"><option :value="s.hora_inicio" x-text="s.display || s.hora_inicio"></option></template>
+                                </select></div>
+                            </div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Tipo sesión</label><select x-model="modalCita.tipo_sesion" class="input-modern"><option value="">—</option><option value="online">Online</option><option value="presencial">Presencial</option></select></div>
+                            <div x-show="modalCita.id"><label class="block text-sm font-medium text-gray-700 mb-1">Estado</label><select x-model="modalCita.estado" class="input-modern"><option value="confirmada">Confirmada</option><option value="pendiente">Pendiente</option><option value="pasada">Pasada</option><option value="no_asistio">No asistió</option><option value="completada">Completada</option><option value="cancelada">Cancelada</option></select><p class="text-xs text-gray-500 mt-1">Si marcas «Completada», se enviará automáticamente una solicitud de reseña al paciente 3 horas después.</p></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Notas</label><textarea x-model="modalCita.notas" rows="2" class="input-modern"></textarea></div>
+                            <div class="flex gap-2 justify-end">
+                                <button type="button" @click="modalCita.show = false" class="btn-secondary">Cancelar</button>
+                                <button type="submit" :disabled="savingModalCita" class="btn-primary"><span x-show="!savingModalCita">Guardar</span><span x-show="savingModalCita">Guardando...</span></button>
+                            </div>
+                            <p x-show="modalCitaMessage" class="text-sm" :class="modalCitaMessage.includes('correctamente') ? 'text-green-600' : 'text-red-600'" x-text="modalCitaMessage"></p>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Modal doble verificación eliminar -->
+                <div x-show="deleteModal.show" x-cloak class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4" @keydown.escape.window="deleteModal.show = false">
+                    <div class="modal-mobile bg-white rounded-t-xl sm:rounded-lg shadow-xl max-w-md w-full mx-0 sm:mx-4 p-5 sm:p-6" @click.stop>
+                        <template x-if="!deleteModal.step2">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900 mb-2">¿Eliminar esta cita?</h3>
+                                <p class="text-gray-600 mb-4">Esta acción no se puede deshacer. La cita se borrará permanentemente.</p>
+                                <div class="flex gap-2 justify-end">
+                                    <button @click="deleteModal.show = false" class="btn-secondary">Cancelar</button>
+                                    <button @click="deleteModal.step2 = true" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200">Sí, eliminar</button>
+                                </div>
+                            </div>
+                        </template>
+                        <template x-if="deleteModal.step2">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900 mb-2">Confirmación final</h3>
+                                <p class="text-gray-600 mb-2">Escribe <strong>ELIMINAR</strong> para confirmar:</p>
+                                <input type="text" x-model="deleteModal.confirmText" placeholder="ELIMINAR" class="input-modern mb-4" @keydown.enter.prevent="confirmDeleteCita()">
+                                <div class="flex gap-2 justify-end">
+                                    <button @click="deleteModal.show = false; deleteModal.step2 = false; deleteModal.confirmText = ''; deleteModal.id = null" class="btn-secondary">Cancelar</button>
+                                    <button @click="confirmDeleteCita()" :disabled="deleteModal.confirmText !== 'ELIMINAR'" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors duration-200">Confirmar eliminación</button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Pacientes -->
+            <div x-show="activeTab === 'pacientes'">
+                <div class="card bg-white p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900">Pacientes</h2>
+                        <button @click="showPacienteForm = !showPacienteForm" class="btn-primary">+ Nuevo paciente</button>
+                    </div>
+                    <div class="mb-5 space-y-3">
+                        <label class="block text-sm font-medium text-gray-700">Buscar paciente</label>
+                        <div class="flex flex-wrap gap-3 items-center">
+                            <input type="text" x-model="pacienteBusqueda" @input.debounce.200ms="loadPacientes()" class="input-modern min-w-0 flex-1 sm:min-w-[280px] py-2.5 text-base" placeholder="Nombre, email o teléfono del cliente...">
+                            <div class="flex items-center gap-2 shrink-0">
+                                <span class="text-sm text-gray-500 whitespace-nowrap">Estado:</span>
+                                <select x-model="pacienteEstadoFilter" @change="loadPacientes()" class="input-modern w-[180px]">
+                                    <option value="">Todos los estados</option>
+                                    <option value="activo">Activo</option>
+                                    <option value="en_proceso">En proceso</option>
+                                    <option value="alta_terapeutica">Alta terapéutica</option>
+                                    <option value="inactivo">Inactivo</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div x-show="showPacienteForm" class="mb-6 card bg-gray-50/80 p-4 border border-gray-100">
+                        <h3 class="font-semibold mb-4">Nuevo paciente</h3>
+                        <form @submit.prevent="createPaciente()" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label><input type="text" x-model="pacienteForm.nombre" class="input-modern" required></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Email *</label><input type="email" x-model="pacienteForm.email" class="input-modern" required></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label><input type="tel" x-model="pacienteForm.telefono" class="input-modern"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Estado</label><select x-model="pacienteForm.estado" class="input-modern"><option value="activo">Activo</option><option value="en_proceso">En proceso</option><option value="alta_terapeutica">Alta terapéutica</option><option value="inactivo">Inactivo</option></select></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Precio sesión (€)</label><input type="number" step="0.01" x-model="pacienteForm.precio_sesion" class="input-modern"></div>
+                            <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">Observaciones sobre el paciente</label><textarea x-model="pacienteForm.notas_privadas" class="input-modern" rows="3" placeholder="Notas privadas, evolución, recordatorios... Solo visibles para ti."></textarea></div>
+                            <div class="md:col-span-2 flex gap-2">
+                                <button type="submit" :disabled="creatingPaciente" class="btn-primary">Crear</button>
+                                <button type="button" @click="showPacienteForm = false" class="btn-secondary">Cancelar</button>
+                            </div>
+                            <p x-show="pacienteMessage" class="md:col-span-2 text-sm" :class="pacienteMessage.includes('correctamente') ? 'text-green-600' : 'text-red-600'" x-text="pacienteMessage"></p>
+                        </form>
+                    </div>
+                    <div class="overflow-x-auto rounded-xl border border-gray-100">
+                        <table class="table-modern w-full text-sm">
+                            <thead><tr><th class="rounded-tl-xl">Nombre</th><th>Email</th><th>Teléfono</th><th>Estado</th><th class="text-right rounded-tr-xl">Acciones</th></tr></thead>
+                            <tbody>
+                                <template x-for="p in pacientes" :key="p.id">
+                                    <tr>
+                                        <td class="font-medium" x-text="p.nombre"></td>
+                                        <td x-text="p.email"></td>
+                                        <td x-text="p.telefono || '—'"></td>
+                                        <td><span class="badge" :class="p.estado==='activo' ? 'badge-confirmada' : p.estado==='en_proceso' ? 'badge-pendiente' : p.estado==='alta_terapeutica' ? 'badge-pasada' : 'badge-pasada'" x-text="p.estado"></span></td>
+                                        <td class="text-right">
+                                            <button @click="openFichaPaciente(p.id)" class="btn-link mr-2">Ficha</button>
+                                            <button @click="openEditPaciente(p)" class="btn-link mr-2">Editar</button>
+                                            <button @click="exportPaciente(p.id)" class="text-gray-600 hover:underline mr-2">Exportar</button>
+                                            <button @click="confirmDeletePaciente(p)" class="text-red-600 hover:underline">Eliminar</button>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                        <p x-show="pacientes.length === 0 && !loadingPacientes" class="text-gray-500 text-center py-6">No hay pacientes. Añade uno o impórtalos desde las reservas.</p>
+                    </div>
+                </div>
+                <!-- Modal ficha paciente -->
+                <div x-show="fichaPaciente.show" x-cloak class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4" @keydown.escape.window="fichaPaciente.show = false">
+                    <div class="modal-mobile bg-white rounded-t-xl sm:rounded-lg shadow-xl max-w-2xl w-full mx-0 sm:mx-4 max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-xl font-bold" x-text="fichaPaciente.paciente ? fichaPaciente.paciente.nombre : ''"></h3>
+                            <button @click="fichaPaciente.show = false" class="text-gray-500 hover:text-gray-700">✕</button>
+                        </div>
+                        <template x-if="fichaPaciente.paciente">
+                            <div class="space-y-4 text-sm">
+                                <p><strong>Email:</strong> <span x-text="fichaPaciente.paciente.email"></span></p>
+                                <p x-show="fichaPaciente.paciente.telefono"><strong>Teléfono:</strong> <span x-text="fichaPaciente.paciente.telefono"></span></p>
+                                <p><strong>Estado:</strong> <span x-text="fichaPaciente.paciente.estado"></span></p>
+                                <p x-show="fichaPaciente.paciente.notas_privadas" class="mt-2"><strong>Observaciones:</strong><br><span class="text-gray-700 whitespace-pre-line" x-text="fichaPaciente.paciente.notas_privadas"></span></p>
+                                <p><strong>Total sesiones:</strong> <span x-text="fichaPaciente.totalSesiones"></span></p>
+                                <p><strong>Facturación estimada:</strong> <span x-text="fichaPaciente.facturacionEstimada + ' €'"></span></p>
+                                <p x-show="fichaPaciente.proximaCita"><strong>Próxima cita:</strong> <span x-text="fichaPaciente.proximaCita.fecha + ' ' + fichaPaciente.proximaCita.hora_inicio"></span></p>
+                                <div>
+                                    <h4 class="font-semibold mt-2">Histórico de citas</h4>
+                                    <ul class="list-disc pl-5 mt-1">
+                                        <template x-for="c in (fichaPaciente.citas || [])" :key="c.id">
+                                            <li x-text="c.fecha + ' ' + c.hora_inicio + ' - ' + c.estado"></li>
+                                        </template>
+                                    </ul>
+                                </div>
+                                <div class="flex gap-2 pt-4">
+                                    <button @click="fichaPaciente.show = false; openEditPaciente(fichaPaciente.paciente)" class="btn-primary">Editar</button>
+                                    <button @click="downloadFichaJson()" class="btn-secondary">Exportar JSON</button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Modal editar paciente -->
+                <div x-show="editPacienteModal.show" x-cloak class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4" @keydown.escape.window="editPacienteModal.show = false">
+                    <div class="modal-mobile bg-white rounded-t-xl sm:rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+                        <h3 class="text-xl font-bold mb-4">Editar paciente</h3>
+                        <p class="text-sm text-gray-500 mb-4">Corrige los datos si hubo un error al crear la reserva o el paciente.</p>
+                        <form @submit.prevent="saveEditPaciente()" class="space-y-4">
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label><input type="text" x-model="editPacienteForm.nombre" class="input-modern" required></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Email *</label><input type="email" x-model="editPacienteForm.email" class="input-modern" required></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label><input type="tel" x-model="editPacienteForm.telefono" class="input-modern"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Estado</label><select x-model="editPacienteForm.estado" class="input-modern"><option value="activo">Activo</option><option value="en_proceso">En proceso</option><option value="alta_terapeutica">Alta terapéutica</option><option value="inactivo">Inactivo</option></select></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Precio sesión (€)</label><input type="number" step="0.01" x-model="editPacienteForm.precio_sesion" class="input-modern"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Observaciones sobre el paciente</label><textarea x-model="editPacienteForm.notas_privadas" class="input-modern" rows="4" placeholder="Notas privadas, evolución, recordatorios... Solo visibles para ti."></textarea><p class="text-xs text-gray-500 mt-1">Todo lo que necesites anotar sobre este paciente. Se guarda en la base de datos.</p></div>
+                            <div class="flex gap-2 pt-2">
+                                <button type="button" @click="editPacienteModal.show = false" class="btn-secondary">Cancelar</button>
+                                <button type="submit" :disabled="savingEditPaciente" class="btn-primary"><span x-show="!savingEditPaciente">Guardar cambios</span><span x-show="savingEditPaciente">Guardando...</span></button>
+                            </div>
+                            <p x-show="editPacienteMessage" class="text-sm" :class="editPacienteMessage.includes('correctamente') ? 'text-green-600' : 'text-red-600'" x-text="editPacienteMessage"></p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Landing (web pública editable) -->
+            <div x-show="activeTab === 'landing'">
+                <div class="card bg-white p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Landing page</h2>
+                    <p class="text-sm text-gray-500 mb-6">Contenido de tu web pública. Los visitantes verán esta información y podrán reservar cita desde el botón. Puedes usar URLs de imágenes (ej. Imgur, tu dominio).</p>
+                    <form @submit.prevent="saveLanding()" class="space-y-6">
+                        <div class="border-b border-gray-100 pb-6">
+                            <h3 class="font-semibold text-gray-900 mb-3">Cabecera (hero)</h3>
+                            <div class="space-y-4">
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Título principal</label><input type="text" x-model="landing.hero_title" class="input-modern" placeholder="Ej: Bienvenido a tu espacio de bienestar"></div>
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Subtítulo</label><textarea x-model="landing.hero_subtitle" rows="2" class="input-modern" placeholder="Una frase que describa tu consulta y la reserva online"></textarea></div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Imagen cabecera (opcional)</label>
+                                    <div class="flex flex-wrap items-center gap-2 mt-1">
+                                        <input type="file" @change="uploadLandingImage($event, 'hero')" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" id="file-hero">
+                                        <button type="button" @click="document.getElementById('file-hero').click()" :disabled="uploadingImageHero" class="btn-secondary text-sm">
+                                            <span x-show="!uploadingImageHero">Subir desde el ordenador</span>
+                                            <span x-show="uploadingImageHero">Subiendo...</span>
+                                        </button>
+                                        <span class="text-xs text-gray-500">JPG, PNG, GIF o WebP (máx. 5 MB)</span>
+                                    </div>
+                                    <input type="text" x-model="landing.hero_image_url" class="input-modern mt-2" placeholder="O pega aquí una URL (o ruta si subiste imagen)">
+                                    <div x-show="landing.hero_image_url" class="mt-2">
+                                        <img :src="landing.hero_image_url" alt="Vista previa" class="rounded-lg border border-gray-200 max-h-24 object-cover" @error="$el.style.display='none'">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="border-b border-gray-100 pb-6">
+                            <h3 class="font-semibold text-gray-900 mb-3">Bloque «Sobre la consulta»</h3>
+                            <div class="space-y-4">
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Título</label><input type="text" x-model="landing.about_title" class="input-modern" placeholder="Sobre la consulta"></div>
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Texto</label><textarea x-model="landing.about_text" rows="4" class="input-modern" placeholder="Describe tu enfoque, primera sesión, etc."></textarea></div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Imagen del bloque (opcional)</label>
+                                    <div class="flex flex-wrap items-center gap-2 mt-1">
+                                        <input type="file" @change="uploadLandingImage($event, 'about')" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" id="file-about">
+                                        <button type="button" @click="document.getElementById('file-about').click()" :disabled="uploadingImageAbout" class="btn-secondary text-sm">
+                                            <span x-show="!uploadingImageAbout">Subir desde el ordenador</span>
+                                            <span x-show="uploadingImageAbout">Subiendo...</span>
+                                        </button>
+                                        <span class="text-xs text-gray-500">JPG, PNG, GIF o WebP (máx. 5 MB)</span>
+                                    </div>
+                                    <input type="text" x-model="landing.about_image_url" class="input-modern mt-2" placeholder="O pega aquí una URL (o ruta si subiste imagen)">
+                                    <div x-show="landing.about_image_url" class="mt-2">
+                                        <img :src="landing.about_image_url" alt="Vista previa" class="rounded-lg border border-gray-200 max-h-24 object-cover" @error="$el.style.display='none'">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Texto del botón de reserva</label>
+                            <input type="text" x-model="landing.cta_text" class="input-modern w-64" placeholder="Reservar cita">
+                        </div>
+                        <button type="submit" :disabled="savingLanding" class="btn-primary">Guardar landing</button>
+                        <a href="/" target="_blank" rel="noopener" class="btn-secondary ml-2">Ver mi web pública</a>
+                        <span x-show="landingMessage" class="ml-2 text-sm" :class="landingMessage.includes('correctamente') ? 'text-green-600' : 'text-red-600'" x-text="landingMessage"></span>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tab: Facturas -->
+            <div x-show="activeTab === 'facturas'" class="fade-in">
+                <div class="flex gap-2 mb-4">
+                    <button @click="facturaTab = 'nueva'" class="nav-tab" :class="facturaTab === 'nueva' && 'nav-tab-active'">Nueva Factura</button>
+                    <button @click="facturaTab = 'historial'; loadFacturas()" class="nav-tab" :class="facturaTab === 'historial' && 'nav-tab-active'">Historial (<span x-text="facturas.length"></span>)</button>
+                </div>
+
+                <template x-if="facturaTab === 'nueva'">
+                    <div class="card bg-white p-6">
+                        <h2 class="text-xl font-bold text-gray-900 mb-6">Nueva Factura</h2>
+                        <form @submit.prevent="crearFactura()" class="space-y-6">
+                            <div class="card bg-slate-50/80 rounded-xl p-5 border border-slate-100">
+                                <h3 class="font-semibold text-gray-900 mb-3 flex items-center gap-2"><span class="text-lg">👤</span> Datos del Cliente</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">Nombre completo *</label><input type="text" x-model="facturaForm.cliente_nombre" class="input-modern" required placeholder="Juan Pérez"></div>
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">NIF/DNI</label><input type="text" x-model="facturaForm.cliente_nif" class="input-modern" placeholder="12345678A"></div>
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Dirección</label><input type="text" x-model="facturaForm.cliente_direccion" class="input-modern" placeholder="Calle Mayor, 123"></div>
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Código Postal</label><input type="text" x-model="facturaForm.cliente_cp" class="input-modern" placeholder="29640"></div>
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Ciudad</label><input type="text" x-model="facturaForm.cliente_ciudad" class="input-modern" placeholder="Fuengirola"></div>
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Provincia</label><input type="text" x-model="facturaForm.cliente_provincia" class="input-modern" placeholder="Málaga"></div>
+                                </div>
+                            </div>
+                            <div class="card bg-slate-50/80 rounded-xl p-5 border border-slate-100">
+                                <h3 class="font-semibold text-gray-900 mb-3 flex items-center gap-2"><span class="text-lg">€</span> Concepto y Precio</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">Concepto *</label><input type="text" x-model="facturaForm.concepto" class="input-modern" required placeholder="Sesión de psicología"></div>
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Total pagado por el cliente (€) *</label><input type="number" step="0.01" min="0" x-model="facturaForm.totalPagado" @input="actualizarResumenFactura()" class="input-modern" required placeholder="60"></div>
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">IVA (%)</label><input type="number" step="1" min="0" max="100" x-model="facturaForm.ivaPct" @input="actualizarResumenFactura()" class="input-modern" placeholder="21"></div>
+                                    <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label><input type="text" x-model="facturaForm.descripcion" class="input-modern" placeholder="Sesión individual 50 min"></div>
+                                    <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">Forma de pago</label><input type="text" x-model="facturaForm.forma_pago" class="input-modern" placeholder="Transferencia bancaria"></div>
+                                </div>
+                            </div>
+                            <div class="card bg-emerald-50/80 rounded-xl p-5 border border-emerald-100">
+                                <h3 class="font-semibold text-gray-900 mb-3">Resumen de la Factura</h3>
+                                <p class="text-sm text-gray-600">Precio base: <span x-text="resumenFactura.precioBase"></span></p>
+                                <p class="text-sm text-gray-600">IVA (<span x-text="resumenFactura.ivaPct"></span>%): <span x-text="resumenFactura.ivaEur"></span></p>
+                                <p class="font-semibold text-[var(--primary-color)] mt-2">Total: <span x-text="resumenFactura.total"></span></p>
+                            </div>
+                            <button type="submit" :disabled="savingFactura" class="btn-primary">
+                                <span x-show="!savingFactura">Crear Factura</span>
+                                <span x-show="savingFactura">Creando...</span>
+                            </button>
+                            <span x-show="facturaMessage" class="ml-2 text-sm" :class="facturaMessage.includes('correctamente') ? 'text-green-600' : 'text-red-600'" x-text="facturaMessage"></span>
+                        </form>
+                    </div>
+                </template>
+
+                <template x-if="facturaTab === 'historial'">
+                    <div class="card bg-white p-6">
+                        <h2 class="text-xl font-bold text-gray-900 mb-4">Historial de facturas</h2>
+                        <p x-show="facturas.length === 0" class="text-gray-500 py-4">No hay facturas aún.</p>
+                        <div x-show="facturas.length > 0" class="overflow-x-auto">
+                            <table class="table-modern w-full">
+                                <thead><tr><th>Nº</th><th>Fecha</th><th>Cliente</th><th>Concepto</th><th>Total</th><th>Acciones</th></tr></thead>
+                                <tbody>
+                                    <template x-for="f in facturas" :key="f.id">
+                                        <tr>
+                                            <td x-text="f.numero_factura"></td>
+                                            <td x-text="f.fecha_emision ? String(f.fecha_emision).slice(0,10) : ''"></td>
+                                            <td x-text="f.cliente_nombre"></td>
+                                            <td x-text="f.concepto"></td>
+                                            <td x-text="formatEuroFactura(f.total)"></td>
+                                            <td class="flex gap-2 items-center justify-end">
+                                                <a :href="'/dashboard/api/facturas/' + f.id + '/pdf'" target="_blank" rel="noopener" class="btn-link">Ver PDF</a>
+                                                <button type="button" @click="eliminarFactura(f)" class="text-red-600 hover:text-red-700 text-sm font-medium">Eliminar</button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Tab: Reputación en Google (ReputacionPro) -->
+            <div x-show="activeTab === 'reputacion'" class="fade-in">
+                <div class="card bg-white p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Reputación en Google</h2>
+                    <p class="text-gray-600 mb-6">Tu perfil de Google es una de las principales fuentes de nuevos pacientes. Activa este sistema y comienza a fortalecer tu posicionamiento de forma automática después de cada sesión.</p>
+                    <p class="text-sm text-gray-600 mb-6">Cuantas más reseñas positivas y recientes tenga tu perfil, mayor será tu visibilidad en tu ciudad. Este sistema te ayuda a conseguirlas de forma natural, profesional y sin esfuerzo manual.</p>
+                    <form @submit.prevent="saveReputacion()" class="space-y-4 mb-8">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Enlace a tu perfil de Google *</label>
+                            <input type="url" x-model="reputacion.googleReviewUrl" class="input-modern" placeholder="https://g.page/...">
+                            <p class="text-xs text-gray-500 mt-1">Busca tu consulta en Google, pulsa en «Escribir reseña» y copia el enlace que aparece en la barra del navegador. Pégalo aquí.</p>
+                        </div>
+                        <button type="submit" :disabled="savingReputacion" class="btn-primary">Guardar configuración</button>
+                        <span x-show="reputacionMessage" class="ml-2 text-sm" :class="reputacionMessage.includes('correctamente') ? 'text-green-600' : 'text-red-600'" x-text="reputacionMessage"></span>
+                    </form>
+                    <div class="border-t pt-6">
+                        <h3 class="font-semibold text-gray-900 mb-4">Resumen este mes</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="card bg-gray-50/80 p-4">
+                                <p class="text-sm font-medium text-gray-500">Solicitudes enviadas</p>
+                                <p class="text-2xl font-bold text-gray-900" x-text="reputacionStats.solicitudesEnviadasMes ?? '0'"></p>
+                            </div>
+                            <div class="card bg-gray-50/80 p-4">
+                                <p class="text-sm font-medium text-gray-500">Valoraciones recibidas</p>
+                                <p class="text-2xl font-bold text-gray-900" x-text="reputacionStats.valoracionesInternas ?? '0'"></p>
+                            </div>
+                            <div class="card bg-gray-50/80 p-4">
+                                <p class="text-sm font-medium text-gray-500">Clics a Google</p>
+                                <p class="text-2xl font-bold text-gray-900" x-text="reputacionStats.clicsGoogle ?? '0'"></p>
+                            </div>
+                            <div class="card bg-gray-50/80 p-4">
+                                <p class="text-sm font-medium text-gray-500">Media de valoración</p>
+                                <p class="text-2xl font-bold text-gray-900" x-text="reputacionStats.mediaValoracion != null ? reputacionStats.mediaValoracion : '—'"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Config -->
+            <div x-show="activeTab === 'config'">
+                <div class="card bg-white p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Configuración del Negocio</h2>
+                    
+                    <form @submit.prevent="saveConfig()" class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nombre del negocio</label>
+                            <input type="text" x-model="config.businessName" class="input-modern" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+                            <input type="tel" x-model="config.businessPhone" class="input-modern" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input type="email" x-model="config.businessEmail" class="input-modern" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Duración de citas (minutos)</label>
+                            <input type="number" x-model="config.appointmentDuration" min="15" step="5" class="input-modern" required>
+                            <p class="text-xs text-gray-500 mt-1">
+                                Ejemplo: 50 minutos para sesiones estándar, 20 minutos para consultas cortas
+                            </p>
+                        </div>
+
+                        <div class="border-t pt-6 mt-4">
+                            <h3 class="font-semibold text-gray-900 mb-3">Datos fiscales (emisor de facturas)</h3>
+                            <p class="text-sm text-gray-500 mb-3">Nombre, teléfono y email del emisor se usan de arriba. Completa NIF y dirección fiscal para que las facturas sean válidas.</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">NIF/CIF</label>
+                                    <input type="text" x-model="negocio.nif" class="input-modern" placeholder="12345678A">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Dirección fiscal</label>
+                                    <input type="text" x-model="negocio.direccion" class="input-modern" placeholder="Calle, número, código postal, ciudad">
+                                </div>
+                            </div>
+                            <button type="button" @click="saveDatosFiscales()" :disabled="savingDatosFiscales" class="btn-secondary">
+                                <span x-show="!savingDatosFiscales">Guardar datos fiscales</span>
+                                <span x-show="savingDatosFiscales">Guardando...</span>
+                            </button>
+                            <span x-show="datosFiscalesMessage" class="ml-2 text-sm" :class="datosFiscalesMessage.includes('correctamente') ? 'text-green-600' : 'text-red-600'" x-text="datosFiscalesMessage"></span>
+                        </div>
+
+                        <button type="submit" :disabled="savingConfig" class="btn-primary">
+                            <span x-show="!savingConfig">Guardar configuración</span>
+                            <span x-show="savingConfig">Guardando...</span>
+                        </button>
+
+                        <div x-show="configMessage" class="p-4 rounded-lg" 
+                             :class="configMessage.includes('correctamente') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'"
+                             x-text="configMessage">
+                        </div>
+
+                        <div class="border-t pt-6 mt-6">
+                            <h3 class="font-semibold text-gray-900 mb-2">Probar envío de emails</h3>
+                            <p class="text-sm text-gray-500 mb-3">Se enviará un email de prueba al correo del negocio (arriba). Usa la configuración SMTP de abajo o la de variables de entorno.</p>
+                            <button 
+                                type="button"
+                                @click="sendTestEmail()"
+                                :disabled="testEmailSending"
+                                class="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-800 disabled:opacity-50 text-sm"
+                            >
+                                <span x-show="!testEmailSending">Enviar email de prueba</span>
+                                <span x-show="testEmailSending">Enviando...</span>
+                            </button>
+                            <p x-show="testEmailMessage" class="mt-2 text-sm p-2 rounded"
+                               :class="testEmailMessage.includes('enviado') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'"
+                               x-text="testEmailMessage"></p>
+                        </div>
+
+                        <div class="border-t pt-6 mt-6">
+                            <h3 class="font-semibold text-gray-900 mb-2">Google Calendar</h3>
+                            <p class="text-sm text-gray-500 mb-3">Conecta tu cuenta de Google para que cada reserva (desde la web o desde el panel) se cree automáticamente en tu calendario. Opcionalmente, los huecos que tengas ocupados en Google no se ofrecerán en la web.</p>
+                            <div x-show="googleCalendarMessage" class="mb-3 p-3 rounded text-sm" :class="googleCalendarMessage.includes('Conectado') || googleCalendarMessage.includes('correctamente') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'" x-text="googleCalendarMessage"></div>
+                            <template x-if="!googleCalendarConnected">
+                                <div>
+                                    <button type="button" @click="connectGoogleCalendar()" :disabled="googleCalendarLoading" class="btn-primary">
+                                        <span x-show="!googleCalendarLoading">Conectar con Google Calendar</span>
+                                        <span x-show="googleCalendarLoading">Cargando...</span>
+                                    </button>
+                                    <p class="text-xs text-gray-500 mt-2">Serás redirigido a Google para autorizar. Solo se crean y leen eventos en el calendario que elijas.</p>
+                                </div>
+                            </template>
+                            <template x-if="googleCalendarConnected">
+                                <div>
+                                    <p class="text-green-700 font-medium mb-2">Conectado. Las reservas se crearán en tu Google Calendar.</p>
+                                    <label class="flex items-center gap-2 mb-3 cursor-pointer">
+                                        <input type="checkbox" x-model="googleCalendarSyncBusy" @change="saveGoogleCalendarSyncBusy()">
+                                        <span class="text-sm">Usar también mi Google Calendar para no ofrecer huecos ocupados (si tienes otros eventos, no se mostrarán como disponibles en la web)</span>
+                                    </label>
+                                    <button type="button" @click="disconnectGoogleCalendar()" class="btn-secondary">Desconectar Google Calendar</button>
+                                </div>
+                            </template>
+                        </div>
+                    </form>
+
+                    <div class="border-t pt-6 mt-6">
+                        <h3 class="font-semibold text-gray-900 mb-4">Configuración SMTP</h3>
+                        <p class="text-sm text-gray-500 mb-4">Opcional. Si la rellenas, los emails (confirmaciones, recordatorios) se enviarán con esta cuenta. Si no, se usan variables de entorno (SMTP_*) o Resend.</p>
+                        <form @submit.prevent="saveSmtp()" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Host SMTP</label><input type="text" x-model="negocio.smtp_host" class="input-modern" placeholder="smtp.gmail.com"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Puerto</label><input type="number" x-model="negocio.smtp_port" class="input-modern" placeholder="587"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Usuario</label><input type="text" x-model="negocio.smtp_user" class="input-modern" placeholder="tu@email.com"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label><input type="password" x-model="negocio.smtp_password" class="input-modern" placeholder="••••••••"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Email remitente</label><input type="email" x-model="negocio.email_remitente" class="input-modern" placeholder="noreply@tudominio.com"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Nombre remitente</label><input type="text" x-model="negocio.nombre_remitente" class="input-modern" placeholder="Mi Negocio"></div>
+                            <div class="md:col-span-2"><button type="submit" :disabled="savingSmtp" class="btn-primary">Guardar SMTP</button><span x-show="smtpMessage" class="ml-2 text-sm" :class="smtpMessage.includes('correctamente') ? 'text-green-600' : 'text-red-600'" x-text="smtpMessage"></span></div>
+                        </form>
+                    </div>
+
+                    <div class="border-t pt-6 mt-6">
+                        <h3 class="font-semibold text-gray-900 mb-2">Plantilla de recordatorio (email automático día anterior)</h3>
+                        <p class="text-sm text-gray-500 mb-2">Variables: <code class="bg-gray-100 px-1">{{nombre_paciente}}</code>, <code class="bg-gray-100 px-1">{{fecha}}</code>, <code class="bg-gray-100 px-1">{{hora}}</code>, <code class="bg-gray-100 px-1">{{nombre_negocio}}</code></p>
+                        <form @submit.prevent="savePlantillaRecordatorio()" class="space-y-4">
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Asunto</label><input type="text" x-model="plantillaRecordatorio.asunto" class="input-modern" placeholder="Recordatorio: cita el {{fecha}} a las {{hora}}"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Cuerpo</label><textarea x-model="plantillaRecordatorio.cuerpo" rows="5" class="input-modern" placeholder="Hola {{nombre_paciente}}, Te recordamos tu cita en {{nombre_negocio}} el {{fecha}} a las {{hora}}. Saludos."></textarea></div>
+                            <button type="submit" :disabled="savingPlantilla" class="btn-primary">Guardar plantilla</button>
+                            <span x-show="plantillaMessage" class="ml-2 text-sm" :class="plantillaMessage.includes('correctamente') ? 'text-green-600' : 'text-red-600'" x-text="plantillaMessage"></span>
+                        </form>
+                    </div>
+
+                    <div class="border-t pt-6 mt-6">
+                        <h3 class="font-semibold text-gray-900 mb-2">Textos legales (RGPD)</h3>
+                        <p class="text-sm text-gray-500 mb-4">Se muestran en la landing y el usuario debe aceptarlos para reservar. Se guarda el consentimiento (fecha, IP, versión) al hacer la reserva.</p>
+                        <form @submit.prevent="saveTextosLegales()" class="space-y-4">
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Política de privacidad</label><textarea x-model="textosLegales.politica_privacidad" rows="4" class="input-modern" placeholder="Texto de la política de privacidad..."></textarea></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Consentimiento</label><textarea x-model="textosLegales.consentimiento" rows="4" class="input-modern" placeholder="Texto del consentimiento para el tratamiento de datos..."></textarea></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Versión</label><input type="text" x-model="textosLegales.version" class="input-modern w-24" placeholder="1"></div>
+                            <button type="submit" :disabled="savingTextosLegales" class="btn-primary">Guardar textos legales</button>
+                            <span x-show="textosLegalesMessage" class="ml-2 text-sm" :class="textosLegalesMessage.includes('correctamente') ? 'text-green-600' : 'text-red-600'" x-text="textosLegalesMessage"></span>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Hours -->
+            <div x-show="activeTab === 'hours'">
+                <div class="card bg-white p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Horarios de Atención</h2>
+                    
+                    <div class="space-y-4">
+                        <template x-for="(dayName, dayIndex) in ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']" :key="dayIndex">
+                            <div class="card bg-white/80 border border-gray-100 p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="font-semibold text-gray-900" x-text="dayName"></h3>
+                                    <button 
+                                        @click="addTimeRange(dayIndex)"
+                                        class="text-blue-600 hover:text-blue-700 text-sm"
+                                    >
+                                        + Añadir horario
+                                    </button>
+                                </div>
+                                
+                                <div class="space-y-2">
+                                    <template x-for="(range, rangeIndex) in (openingHours[dayIndex] || [])" :key="rangeIndex">
+                                        <div class="flex items-center gap-2">
+                                            <input type="number" x-model="range[0]" min="0" max="23" class="input-modern w-20" placeholder="Inicio">
+                                            <span>-</span>
+                                            <input type="number" x-model="range[1]" min="0" max="23" class="input-modern w-20" placeholder="Fin">
+                                            <span class="text-sm text-gray-600">h</span>
+                                            <button 
+                                                @click="removeTimeRange(dayIndex, rangeIndex)"
+                                                class="text-red-600 hover:text-red-700 text-sm"
+                                            >
+                                                Eliminar
+                                            </button>
+                                        </div>
+                                    </template>
+                                    <p x-show="!openingHours[dayIndex] || openingHours[dayIndex].length === 0" class="text-sm text-gray-500">
+                                        Día cerrado
+                                    </p>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <button @click="saveHours()" :disabled="savingHours" class="mt-6 btn-primary">
+                        <span x-show="!savingHours">Guardar horarios</span>
+                        <span x-show="savingHours">Guardando...</span>
+                    </button>
+
+                    <div x-show="hoursMessage" class="mt-4 p-4 rounded-lg" 
+                         :class="hoursMessage.includes('correctamente') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'"
+                         x-text="hoursMessage">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Blocked -->
+            <div x-show="activeTab === 'blocked'">
+                <div class="card bg-white p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900">Horarios Bloqueados</h2>
+                        <button @click="showBlockForm = !showBlockForm" class="btn-primary">+ Bloquear horario</button>
+                    </div>
+
+                    <!-- Formulario para bloquear -->
+                    <div x-show="showBlockForm" class="mb-6 card bg-gray-50/80 border border-gray-100 p-4">
+                        <h3 class="font-semibold mb-4">Nuevo bloqueo</h3>
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Fecha y hora inicio
+                                </label>
+                                <input type="datetime-local" x-model="blockForm.startTime" class="input-modern">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Fecha y hora fin</label>
+                                <input type="datetime-local" x-model="blockForm.endTime" class="input-modern">
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Motivo (opcional)</label>
+                            <input type="text" x-model="blockForm.reason" class="input-modern" placeholder="Ej: Vacaciones, cita externa...">
+                        </div>
+                        <div class="flex gap-2">
+                            <button @click="saveBlock()" class="btn-primary">Guardar bloqueo</button>
+                            <button @click="showBlockForm = false; blockForm = { startTime: '', endTime: '', reason: '' }" class="btn-secondary">Cancelar</button>
+                        </div>
+                    </div>
+
+                    <!-- Lista de bloqueos -->
+                    <div class="space-y-4">
+                        <template x-for="block in blockedSlots" :key="block.id">
+                            <div class="card bg-white border border-gray-100 p-4">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-semibold text-gray-900">
+                                            <span x-text="formatDate(block.start_time)"></span> 
+                                            <span x-text="formatTime(block.start_time)"></span>
+                                            - 
+                                            <span x-text="formatTime(block.end_time)"></span>
+                                        </p>
+                                        <p x-show="block.reason" class="text-sm text-gray-600 mt-1" x-text="block.reason"></p>
+                                    </div>
+                                    <button 
+                                        @click="deleteBlock(block.id)"
+                                        class="text-red-600 hover:text-red-700 text-sm font-medium"
+                                    >
+                                        Eliminar
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                        <p x-show="blockedSlots.length === 0" class="text-gray-500 text-center py-8">
+                            No hay horarios bloqueados
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Users -->
+            <div x-show="activeTab === 'users'">
+                <div class="card bg-white p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900">Usuarios</h2>
+                        <button @click="showUserForm = !showUserForm" class="btn-primary">+ Crear usuario</button>
+                    </div>
+
+                    <!-- Formulario para crear usuario -->
+                    <div x-show="showUserForm" class="mb-6 card bg-gray-50/80 border border-gray-100 p-4">
+                        <h3 class="font-semibold mb-4">Nuevo usuario</h3>
+                        <form @submit.prevent="createUser()" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
+                                <input type="text" x-model="userForm.name" class="input-modern" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                <input type="email" x-model="userForm.email" class="input-modern" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Contraseña (mínimo 6 caracteres)</label>
+                                <input type="password" x-model="userForm.password" class="input-modern" required minlength="6">
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="submit" :disabled="creatingUser" class="btn-primary">
+                                    <span x-show="!creatingUser">Crear usuario</span>
+                                    <span x-show="creatingUser">Creando...</span>
+                                </button>
+                                <button type="button" @click="showUserForm = false; userForm = { name: '', email: '', password: '' }" class="btn-secondary">Cancelar</button>
+                            </div>
+                            <div x-show="userMessage" class="p-4 rounded-lg" 
+                                 :class="userMessage.includes('correctamente') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'"
+                                 x-text="userMessage">
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Lista de usuarios -->
+                    <div class="space-y-4">
+                        <template x-for="user in users" :key="user.id">
+                            <div class="card bg-white border border-gray-100 p-4">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h3 class="font-semibold text-gray-900" x-text="user.name"></h3>
+                                        <p class="text-sm text-gray-600" x-text="user.email"></p>
+                                        <p class="text-xs text-gray-500 mt-1">
+                                            Creado: <span x-text="formatDate(user.created_at)"></span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script>
+        function dashboard() {
+            return {
+                activeTab: 'inicio',
+                stats: {},
+                citas: [],
+                pacientes: [],
+                loadingPacientes: false,
+                showPacienteForm: false,
+                pacienteForm: { nombre: '', email: '', telefono: '', estado: 'activo', precio_sesion: '', notas_privadas: '' },
+                pacienteBusqueda: '',
+                pacienteEstadoFilter: '',
+                creatingPaciente: false,
+                pacienteMessage: '',
+                fichaPaciente: { show: false, paciente: null, citas: [], totalSesiones: 0, facturacionEstimada: 0, proximaCita: null },
+                editarPacienteId: null,
+                editPacienteModal: { show: false },
+                editPacienteForm: { nombre: '', email: '', telefono: '', estado: 'activo', precio_sesion: '', notas_privadas: '' },
+                savingEditPaciente: false,
+                editPacienteMessage: '',
+                appointments: [],
+                config: {},
+                openingHours: {},
+                blockedSlots: [],
+                users: [],
+                filters: {
+                    startDate: '',
+                    endDate: ''
+                },
+                appointmentViewMode: 'list',
+                calendarWeekStart: '',
+                modalCita: { show: false, id: null, paciente_id: '', fecha: '', hora_inicio: '', hora_fin: '', tipo_sesion: '', notas: '', estado: 'confirmada' },
+                listaPacientesParaCita: [],
+                reputacion: { googleReviewUrl: '' },
+                reputacionStats: {},
+                reputacionMessage: '',
+                savingReputacion: false,
+                googleCalendarConnected: false,
+                googleCalendarSyncBusy: false,
+                googleCalendarMessage: '',
+                googleCalendarLoading: false,
+                slotsCitaModal: [],
+                savingModalCita: false,
+                modalCitaMessage: '',
+                deleteModal: {
+                    show: false,
+                    step2: false,
+                    confirmText: '',
+                    id: null
+                },
+                showBlockForm: false,
+                showUserForm: false,
+                blockForm: {
+                    startTime: '',
+                    endTime: '',
+                    reason: ''
+                },
+                userForm: {
+                    name: '',
+                    email: '',
+                    password: ''
+                },
+                savingConfig: false,
+                savingDatosFiscales: false,
+                datosFiscalesMessage: '',
+                savingHours: false,
+                creatingUser: false,
+                configMessage: '',
+                hoursMessage: '',
+                userMessage: '',
+                testEmailSending: false,
+                testEmailMessage: '',
+                negocio: {},
+                plantillaRecordatorio: { asunto: '', cuerpo: '' },
+                savingSmtp: false,
+                smtpMessage: '',
+                savingPlantilla: false,
+                plantillaMessage: '',
+                textosLegales: { politica_privacidad: '', consentimiento: '', version: '1' },
+                savingTextosLegales: false,
+                textosLegalesMessage: '',
+                landing: { hero_title: '', hero_subtitle: '', hero_image_url: '', about_title: '', about_text: '', about_image_url: '', cta_text: 'Reservar cita', sections: [] },
+                savingLanding: false,
+                landingMessage: '',
+                uploadingImageHero: false,
+                uploadingImageAbout: false,
+                facturaTab: 'nueva',
+                facturas: [],
+                facturaForm: {
+                    cliente_nombre: '', cliente_nif: '', cliente_direccion: '', cliente_cp: '', cliente_ciudad: '', cliente_provincia: '',
+                    concepto: '', descripcion: '', totalPagado: '', ivaPct: '21', forma_pago: ''
+                },
+                resumenFactura: { precioBase: '0,00 €', ivaPct: 21, ivaEur: '0,00 €', total: '0,00 €' },
+                savingFactura: false,
+                facturaMessage: '',
+
+                async init() {
+                    this.setCalendarWeekToNow();
+                    await this.loadStats();
+                    await Promise.all([
+                        this.loadCitas(),
+                        this.loadConfig(),
+                        this.loadLanding(),
+                        this.loadHours(),
+                        this.loadBlockedSlots(),
+                        this.loadUsers(),
+                        this.loadGoogleCalendarStatus()
+                    ]);
+                    const params = new URLSearchParams(window.location.search);
+                    if (params.get('google_calendar') === 'ok') {
+                        this.googleCalendarMessage = 'Conectado correctamente. Las reservas se crearán en tu Google Calendar.';
+                        this.activeTab = 'config';
+                        await this.loadGoogleCalendarStatus();
+                        window.history.replaceState({}, '', '/dashboard');
+                    } else if (params.get('google_calendar') === 'error') {
+                        this.googleCalendarMessage = decodeURIComponent(params.get('message') || 'Error al conectar');
+                        this.activeTab = 'config';
+                        window.history.replaceState({}, '', '/dashboard');
+                    }
+                },
+
+                async loadStats() {
+                    try {
+                        const res = await fetch('/dashboard/api/stats');
+                        const data = await res.json();
+                        this.stats = data;
+                    } catch (e) {
+                        this.stats = {};
+                    }
+                },
+
+                async loadPacientes() {
+                    this.loadingPacientes = true;
+                    try {
+                        let url = '/dashboard/api/pacientes?';
+                        if (this.pacienteEstadoFilter) url += 'estado=' + encodeURIComponent(this.pacienteEstadoFilter) + '&';
+                        if (this.pacienteBusqueda) url += 'busqueda=' + encodeURIComponent(this.pacienteBusqueda) + '&';
+                        const res = await fetch(url);
+                        const data = await res.json();
+                        this.pacientes = data.pacientes || [];
+                    } catch (e) {
+                        this.pacientes = [];
+                    } finally {
+                        this.loadingPacientes = false;
+                    }
+                },
+
+                openEditPaciente(p) {
+                    this.fichaPaciente.show = false;
+                    this.editPacienteModal = { show: true, pacienteId: p.id };
+                    this.editPacienteForm = {
+                        nombre: p.nombre || '',
+                        email: p.email || '',
+                        telefono: p.telefono || '',
+                        estado: p.estado || 'activo',
+                        precio_sesion: p.precio_sesion != null ? p.precio_sesion : '',
+                        notas_privadas: p.notas_privadas || ''
+                    };
+                    this.editPacienteMessage = '';
+                },
+
+                async saveEditPaciente() {
+                    const id = this.editPacienteModal.pacienteId;
+                    if (!id) return;
+                    this.savingEditPaciente = true;
+                    this.editPacienteMessage = '';
+                    try {
+                        const res = await fetch('/dashboard/api/pacientes/' + id, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.editPacienteForm)
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            this.editPacienteModal.show = false;
+                            this.editPacienteMessage = 'Paciente actualizado correctamente';
+                            await this.loadPacientes();
+                        } else {
+                            this.editPacienteMessage = data.error || 'Error al guardar';
+                        }
+                    } catch (e) {
+                        this.editPacienteMessage = 'Error de conexión';
+                    } finally {
+                        this.savingEditPaciente = false;
+                    }
+                },
+
+                async openFichaPaciente(id) {
+                    try {
+                        const res = await fetch('/dashboard/api/pacientes/' + id);
+                        const data = await res.json();
+                        this.fichaPaciente = {
+                            show: true,
+                            paciente: data.paciente,
+                            citas: data.citas || [],
+                            totalSesiones: data.totalSesiones || 0,
+                            facturacionEstimada: data.facturacionEstimada ?? 0,
+                            proximaCita: data.proximaCita || null
+                        };
+                    } catch (e) {
+                        alert('Error cargando ficha');
+                    }
+                },
+
+                exportPacienteJson(ficha) {
+                    if (!ficha || !ficha.paciente) return '{}';
+                    return JSON.stringify({
+                        paciente: ficha.paciente,
+                        citas: ficha.citas,
+                        totalSesiones: ficha.totalSesiones,
+                        facturacionEstimada: ficha.facturacionEstimada,
+                        proximaCita: ficha.proximaCita
+                    }, null, 2);
+                },
+
+                downloadFichaJson() {
+                    const json = this.exportPacienteJson(this.fichaPaciente);
+                    const blob = new Blob([json], { type: 'application/json' });
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = 'paciente-' + (this.fichaPaciente.paciente ? this.fichaPaciente.paciente.id : '') + '.json';
+                    a.click();
+                },
+
+                async exportPaciente(id) {
+                    try {
+                        const res = await fetch('/dashboard/api/pacientes/' + id);
+                        const data = await res.json();
+                        const blob = new Blob([JSON.stringify({
+                            paciente: data.paciente,
+                            citas: data.citas,
+                            totalSesiones: data.totalSesiones,
+                            facturacionEstimada: data.facturacionEstimada,
+                            proximaCita: data.proximaCita
+                        }, null, 2)], { type: 'application/json' });
+                        const a = document.createElement('a');
+                        a.href = URL.createObjectURL(blob);
+                        a.download = 'paciente-' + id + '.json';
+                        a.click();
+                    } catch (e) {
+                        alert('Error exportando');
+                    }
+                },
+
+                async confirmDeletePaciente(p) {
+                    if (!confirm('¿Eliminar al paciente "' + p.nombre + '"? Se eliminarán también sus datos. Esta acción no se puede deshacer.')) return;
+                    try {
+                        const res = await fetch('/dashboard/api/pacientes/' + p.id, { method: 'DELETE' });
+                        const data = await res.json().catch(() => ({}));
+                        if (data.success) {
+                            await this.loadPacientes();
+                        } else {
+                            alert(data.error || 'Error eliminando paciente');
+                        }
+                    } catch (e) {
+                        alert('Error de conexión al eliminar');
+                    }
+                },
+
+                async createPaciente() {
+                    this.creatingPaciente = true;
+                    this.pacienteMessage = '';
+                    try {
+                        const res = await fetch('/dashboard/api/pacientes', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.pacienteForm)
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            this.pacienteMessage = 'Paciente creado correctamente';
+                            this.pacienteForm = { nombre: '', email: '', telefono: '', estado: 'activo', precio_sesion: '', notas_privadas: '' };
+                            this.showPacienteForm = false;
+                            await this.loadPacientes();
+                        } else {
+                            this.pacienteMessage = data.error || 'Error';
+                        }
+                    } catch (e) {
+                        this.pacienteMessage = 'Error de conexión';
+                    } finally {
+                        this.creatingPaciente = false;
+                    }
+                },
+
+                setCalendarWeekToNow() {
+                    const today = new Date();
+                    const day = today.getDay();
+                    const diff = today.getDate() - (day === 0 ? 6 : day - 1);
+                    const monday = new Date(today);
+                    monday.setDate(diff);
+                    this.calendarWeekStart = monday.toISOString().slice(0, 10);
+                },
+
+                getCalendarWeekDays() {
+                    if (!this.calendarWeekStart) return [];
+                    const m = new Date(this.calendarWeekStart + 'T12:00:00');
+                    const days = [];
+                    const dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+                    for (let i = 0; i < 7; i++) {
+                        const d = new Date(m);
+                        d.setDate(m.getDate() + i);
+                        const dateStr = d.toISOString().slice(0, 10);
+                        days.push({ date: dateStr, label: dayNames[i] + ' ' + d.getDate() });
+                    }
+                    return days;
+                },
+
+                getCalendarWeekLabel() {
+                    if (!this.calendarWeekStart) return '';
+                    const m = new Date(this.calendarWeekStart + 'T12:00:00');
+                    const sun = new Date(m);
+                    sun.setDate(m.getDate() + 6);
+                    return m.getDate() + ' - ' + sun.getDate() + ' ' + sun.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+                },
+
+                getCalendarHours() {
+                    const h = [];
+                    for (let i = 8; i <= 20; i++) h.push(i);
+                    return h;
+                },
+
+                getCitasInCell(dayStr, hour) {
+                    return this.citas.filter(c => {
+                        const fechaStr = c.fecha ? String(c.fecha).slice(0, 10) : '';
+                        if (fechaStr !== dayStr) return false;
+                        const h = parseInt(String(c.hora_inicio).split(':')[0], 10);
+                        return h === hour;
+                    });
+                },
+
+                prevWeek() {
+                    const m = new Date(this.calendarWeekStart + 'T12:00:00');
+                    m.setDate(m.getDate() - 7);
+                    this.calendarWeekStart = m.toISOString().slice(0, 10);
+                    this.loadCitas();
+                },
+
+                nextWeek() {
+                    const m = new Date(this.calendarWeekStart + 'T12:00:00');
+                    m.setDate(m.getDate() + 7);
+                    this.calendarWeekStart = m.toISOString().slice(0, 10);
+                    this.loadCitas();
+                },
+
+                goToToday() {
+                    this.setCalendarWeekToNow();
+                    this.loadCitas();
+                },
+
+                async loadCitas() {
+                    try {
+                        if (this.appointmentViewMode === 'calendar' && this.calendarWeekStart) {
+                            const mon = new Date(this.calendarWeekStart + 'T12:00:00');
+                            const sun = new Date(mon);
+                            sun.setDate(mon.getDate() + 6);
+                            this.filters.startDate = this.calendarWeekStart;
+                            this.filters.endDate = sun.getFullYear() + '-' + String(sun.getMonth() + 1).padStart(2, '0') + '-' + String(sun.getDate()).padStart(2, '0');
+                        }
+                        let url = '/dashboard/api/citas?';
+                        if (this.filters.startDate) url += 'startDate=' + encodeURIComponent(this.filters.startDate) + '&';
+                        if (this.filters.endDate) url += 'endDate=' + encodeURIComponent(this.filters.endDate) + '&';
+                        const res = await fetch(url);
+                        const data = await res.json();
+                        this.citas = data.citas || [];
+                    } catch (error) {
+                        console.error('Error cargando citas:', error);
+                        this.citas = [];
+                    }
+                },
+
+                getMinDateForNew() {
+                    return new Date().toISOString().slice(0, 10);
+                },
+
+                formatCitaFecha(fecha) {
+                    return fecha ? String(fecha).slice(0, 10) : '';
+                },
+
+                openModalCita(cita) {
+                    this.loadListaPacientesParaCita();
+                    if (cita) {
+                        this.modalCita = { show: true, id: cita.id, paciente_id: cita.paciente_id, fecha: this.formatCitaFecha(cita.fecha), hora_inicio: cita.hora_inicio, hora_fin: cita.hora_fin, tipo_sesion: cita.tipo_sesion || '', notas: cita.notas || '', estado: cita.estado || 'confirmada' };
+                        this.slotsCitaModal = [{ hora_inicio: cita.hora_inicio, hora_fin: cita.hora_fin, display: cita.hora_inicio }];
+                    } else {
+                        this.modalCita = { show: true, id: null, paciente_id: '', fecha: '', hora_inicio: '', hora_fin: '', tipo_sesion: '', notas: '', estado: 'confirmada' };
+                        this.slotsCitaModal = [];
+                    }
+                    this.modalCitaMessage = '';
+                },
+
+                async loadListaPacientesParaCita() {
+                    try {
+                        const res = await fetch('/dashboard/api/pacientes');
+                        const data = await res.json();
+                        this.listaPacientesParaCita = data.pacientes || [];
+                    } catch (e) {
+                        this.listaPacientesParaCita = [];
+                    }
+                },
+
+                async loadSlotsCitaModal() {
+                    this.modalCita.hora_inicio = '';
+                    this.modalCita.hora_fin = '';
+                    if (!this.modalCita.fecha) { this.slotsCitaModal = []; return; }
+                    try {
+                        const res = await fetch('/dashboard/api/citas/slots?fecha=' + encodeURIComponent(this.modalCita.fecha));
+                        const data = await res.json();
+                        this.slotsCitaModal = (data.slots || []).map(s => ({ ...s, display: s.display || s.hora_inicio }));
+                    } catch (e) {
+                        this.slotsCitaModal = [];
+                    }
+                },
+
+                setHoraFinFromSlot() {
+                    const s = this.slotsCitaModal.find(x => x.hora_inicio === this.modalCita.hora_inicio);
+                    this.modalCita.hora_fin = s ? s.hora_fin : '';
+                },
+
+                async saveModalCita() {
+                    this.savingModalCita = true;
+                    this.modalCitaMessage = '';
+                    try {
+                        if (this.modalCita.id) {
+                            const res = await fetch('/dashboard/api/citas/' + this.modalCita.id, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ fecha: this.modalCita.fecha, hora_inicio: this.modalCita.hora_inicio, hora_fin: this.modalCita.hora_fin, tipo_sesion: this.modalCita.tipo_sesion || null, notas: this.modalCita.notas || null, estado: this.modalCita.estado || 'confirmada' })
+                            });
+                            const data = await res.json();
+                            if (data.success) { this.modalCita.show = false; await this.loadCitas(); }
+                            else this.modalCitaMessage = data.error || 'Error';
+                        } else {
+                            if (!this.modalCita.hora_fin) this.setHoraFinFromSlot();
+                            const res = await fetch('/dashboard/api/citas', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ paciente_id: this.modalCita.paciente_id, fecha: this.modalCita.fecha, hora_inicio: this.modalCita.hora_inicio, hora_fin: this.modalCita.hora_fin, tipo_sesion: this.modalCita.tipo_sesion || null, notas: this.modalCita.notas || null, estado: 'confirmada' })
+                            });
+                            const data = await res.json();
+                            if (data.success) { this.modalCita.show = false; await this.loadCitas(); }
+                            else this.modalCitaMessage = data.error || 'Error';
+                        }
+                    } catch (e) {
+                        this.modalCitaMessage = 'Error de conexión';
+                    } finally {
+                        this.savingModalCita = false;
+                    }
+                },
+
+                openDeleteModal(apt) {
+                    this.deleteModal = { show: true, step2: false, confirmText: '', id: apt.id };
+                },
+
+                async confirmDeleteCita() {
+                    if (this.deleteModal.confirmText !== 'ELIMINAR' || !this.deleteModal.id) return;
+                    try {
+                        const response = await fetch('/dashboard/api/citas/' + this.deleteModal.id, { method: 'DELETE' });
+                        const data = await response.json();
+                        if (data.success) {
+                            this.deleteModal = { show: false, step2: false, confirmText: '', id: null };
+                            await this.loadCitas();
+                        } else {
+                            alert(data.error || 'Error al eliminar');
+                        }
+                    } catch (error) {
+                        alert('Error al eliminar la cita');
+                    }
+                    this.deleteModal = { show: false, step2: false, confirmText: '', id: null };
+                },
+
+                async loadConfig() {
+                    try {
+                        const [configRes, negocioRes, plantillaRes] = await Promise.all([
+                            fetch('/dashboard/api/config'),
+                            fetch('/dashboard/api/negocio').catch(() => ({ json: () => ({}) })),
+                            fetch('/dashboard/api/plantillas/recordatorio').catch(() => ({ json: () => ({}) }))
+                        ]);
+                        const data = await configRes.json();
+                        this.config = data;
+                        if (data.openingHours) {
+                            this.openingHours = {};
+                            Object.keys(data.openingHours).forEach(key => {
+                                this.openingHours[parseInt(key)] = data.openingHours[key];
+                            });
+                        }
+                        const negocioData = await negocioRes.json();
+                        if (negocioData.nombre !== undefined) this.negocio = negocioData;
+                        const plantillaData = await plantillaRes.json();
+                        if (plantillaData.plantilla) {
+                            this.plantillaRecordatorio = { asunto: plantillaData.plantilla.asunto || '', cuerpo: plantillaData.plantilla.cuerpo || '' };
+                        }
+                        const textosRes = await fetch('/dashboard/api/textos-legales').catch(() => ({ json: () => ({}) }));
+                        const textosData = await textosRes.json();
+                        if (textosData.politica_privacidad !== undefined) this.textosLegales = { politica_privacidad: textosData.politica_privacidad || '', consentimiento: textosData.consentimiento || '', version: textosData.version || '1' };
+                    } catch (error) {
+                        console.error('Error cargando configuración:', error);
+                    }
+                },
+
+                async loadGoogleCalendarStatus() {
+                    try {
+                        const res = await fetch('/dashboard/api/google-calendar/status');
+                        const data = await res.json();
+                        this.googleCalendarConnected = !!data.connected;
+                        this.googleCalendarSyncBusy = !!data.syncBusy;
+                    } catch (e) {
+                        this.googleCalendarConnected = false;
+                    }
+                },
+                async connectGoogleCalendar() {
+                    this.googleCalendarLoading = true;
+                    this.googleCalendarMessage = '';
+                    try {
+                        const res = await fetch('/dashboard/api/google-calendar/auth-url');
+                        const data = await res.json();
+                        if (data.url) {
+                            window.location.href = data.url;
+                        } else {
+                            this.googleCalendarMessage = data.error || 'No se pudo obtener el enlace. Configura GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en el servidor.';
+                        }
+                    } catch (e) {
+                        this.googleCalendarMessage = 'Error de conexión';
+                    } finally {
+                        this.googleCalendarLoading = false;
+                    }
+                },
+                async disconnectGoogleCalendar() {
+                    if (!confirm('¿Desconectar Google Calendar? Las reservas ya creadas en Google no se borrarán.')) return;
+                    try {
+                        await fetch('/dashboard/api/google-calendar/disconnect', { method: 'POST' });
+                        this.googleCalendarMessage = 'Desconectado correctamente.';
+                        await this.loadGoogleCalendarStatus();
+                    } catch (e) {
+                        this.googleCalendarMessage = 'Error al desconectar';
+                    }
+                },
+                async saveGoogleCalendarSyncBusy() {
+                    try {
+                        await fetch('/dashboard/api/google-calendar/sync-busy', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ enabled: this.googleCalendarSyncBusy })
+                        });
+                    } catch (e) {}
+                },
+
+                async saveSmtp() {
+                    this.savingSmtp = true;
+                    this.smtpMessage = '';
+                    try {
+                        const res = await fetch('/dashboard/api/negocio', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.negocio)
+                        });
+                        const data = await res.json();
+                        this.smtpMessage = data.success ? 'SMTP guardado correctamente' : (data.error || 'Error');
+                    } catch (e) {
+                        this.smtpMessage = 'Error de conexión';
+                    } finally {
+                        this.savingSmtp = false;
+                    }
+                },
+
+                async savePlantillaRecordatorio() {
+                    this.savingPlantilla = true;
+                    this.plantillaMessage = '';
+                    try {
+                        const res = await fetch('/dashboard/api/plantillas', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ nombre: 'recordatorio', asunto: this.plantillaRecordatorio.asunto, cuerpo: this.plantillaRecordatorio.cuerpo })
+                        });
+                        const data = await res.json();
+                        this.plantillaMessage = data.success ? 'Plantilla guardada correctamente' : (data.error || 'Error');
+                    } catch (e) {
+                        this.plantillaMessage = 'Error de conexión';
+                    } finally {
+                        this.savingPlantilla = false;
+                    }
+                },
+
+                async saveTextosLegales() {
+                    this.savingTextosLegales = true;
+                    this.textosLegalesMessage = '';
+                    try {
+                        const res = await fetch('/dashboard/api/textos-legales', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.textosLegales)
+                        });
+                        const data = await res.json();
+                        this.textosLegalesMessage = data.success ? 'Textos legales guardados correctamente' : (data.error || 'Error');
+                    } catch (e) {
+                        this.textosLegalesMessage = 'Error de conexión';
+                    } finally {
+                        this.savingTextosLegales = false;
+                    }
+                },
+
+                async loadLanding() {
+                    try {
+                        const res = await fetch('/dashboard/api/landing');
+                        const data = await res.json();
+                        this.landing = {
+                            hero_title: data.hero_title || '',
+                            hero_subtitle: data.hero_subtitle || '',
+                            hero_image_url: data.hero_image_url || '',
+                            about_title: data.about_title || '',
+                            about_text: data.about_text || '',
+                            about_image_url: data.about_image_url || '',
+                            cta_text: data.cta_text || 'Reservar cita',
+                            sections: Array.isArray(data.sections) ? data.sections : []
+                        };
+                    } catch (e) {
+                        this.landing = { hero_title: '', hero_subtitle: '', hero_image_url: '', about_title: '', about_text: '', about_image_url: '', cta_text: 'Reservar cita', sections: [] };
+                    }
+                },
+
+                async saveLanding() {
+                    this.savingLanding = true;
+                    this.landingMessage = '';
+                    try {
+                        const res = await fetch('/dashboard/api/landing', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.landing)
+                        });
+                        const data = await res.json();
+                        this.landingMessage = data.success ? 'Landing guardada correctamente' : (data.error || 'Error');
+                    } catch (e) {
+                        this.landingMessage = 'Error de conexión';
+                    } finally {
+                        this.savingLanding = false;
+                    }
+                },
+
+                async uploadLandingImage(event, field) {
+                    const file = event.target.files && event.target.files[0];
+                    if (!file) return;
+                    const isHero = field === 'hero';
+                    if (isHero) this.uploadingImageHero = true; else this.uploadingImageAbout = true;
+                    this.landingMessage = '';
+                    try {
+                        const form = new FormData();
+                        form.append('image', file);
+                        const res = await fetch('/dashboard/api/upload-landing-image', { method: 'POST', body: form });
+                        const data = await res.json();
+                        if (data.url) {
+                            if (isHero) this.landing.hero_image_url = data.url;
+                            else this.landing.about_image_url = data.url;
+                            this.landingMessage = 'Imagen subida. Guarda la landing para aplicar.';
+                        } else {
+                            this.landingMessage = data.error || 'Error subiendo la imagen';
+                        }
+                    } catch (e) {
+                        this.landingMessage = 'Error de conexión al subir';
+                    } finally {
+                        if (isHero) this.uploadingImageHero = false; else this.uploadingImageAbout = false;
+                        event.target.value = '';
+                    }
+                },
+
+                async loadHours() {
+                    try {
+                        const response = await fetch('/dashboard/api/opening-hours');
+                        const data = await response.json();
+                        if (data.openingHours) {
+                            this.openingHours = {};
+                            Object.keys(data.openingHours).forEach(key => {
+                                this.openingHours[parseInt(key)] = data.openingHours[key];
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Error cargando horarios:', error);
+                    }
+                },
+
+                async loadBlockedSlots() {
+                    try {
+                        const response = await fetch('/dashboard/api/blocked-slots');
+                        const data = await response.json();
+                        this.blockedSlots = data.blockedSlots || [];
+                    } catch (error) {
+                        console.error('Error cargando bloqueos:', error);
+                    }
+                },
+
+                async loadUsers() {
+                    try {
+                        const response = await fetch('/dashboard/api/users');
+                        const data = await response.json();
+                        this.users = data.users || [];
+                    } catch (error) {
+                        console.error('Error cargando usuarios:', error);
+                    }
+                },
+
+                async cancelAppointment(id) {
+                    if (!confirm('¿Estás seguro de cancelar esta cita?')) return;
+
+                    try {
+                        const response = await fetch(`/dashboard/api/appointments/${id}/cancel`, {
+                            method: 'POST'
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            await this.loadCitas();
+                        }
+                    } catch (error) {
+                        console.error('Error cancelando cita:', error);
+                        alert('Error al cancelar la cita');
+                    }
+                },
+
+                async saveConfig() {
+                    this.savingConfig = true;
+                    this.configMessage = '';
+
+                    try {
+                        const response = await fetch('/dashboard/api/config', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.config)
+                        });
+                        const data = await response.json();
+                        this.configMessage = data.success ? 'Configuración guardada correctamente' : data.error;
+                    } catch (error) {
+                        this.configMessage = 'Error guardando configuración';
+                    } finally {
+                        this.savingConfig = false;
+                    }
+                },
+
+                async saveDatosFiscales() {
+                    this.savingDatosFiscales = true;
+                    this.datosFiscalesMessage = '';
+                    try {
+                        const res = await fetch('/dashboard/api/negocio', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ nif: this.negocio.nif, direccion: this.negocio.direccion })
+                        });
+                        const data = await res.json();
+                        this.datosFiscalesMessage = data.success ? 'Datos fiscales guardados correctamente' : (data.error || 'Error');
+                    } catch (e) {
+                        this.datosFiscalesMessage = 'Error de conexión';
+                    } finally {
+                        this.savingDatosFiscales = false;
+                    }
+                },
+
+                actualizarResumenFactura() {
+                    const total = parseFloat(this.facturaForm.totalPagado) || 0;
+                    const ivaPct = parseFloat(this.facturaForm.ivaPct) || 21;
+                    const precioBase = total / (1 + ivaPct / 100);
+                    const ivaEur = total - precioBase;
+                    this.resumenFactura = {
+                        precioBase: precioBase.toFixed(2).replace('.', ',') + ' €',
+                        ivaPct: ivaPct,
+                        ivaEur: ivaEur.toFixed(2).replace('.', ',') + ' €',
+                        total: total.toFixed(2).replace('.', ',') + ' €'
+                    };
+                },
+                formatEuroFactura(n) {
+                    if (n == null) return '0,00 €';
+                    const x = typeof n === 'number' ? n : parseFloat(n);
+                    return isNaN(x) ? '0,00 €' : x.toFixed(2).replace('.', ',') + ' €';
+                },
+                async loadFacturas() {
+                    try {
+                        const res = await fetch('/dashboard/api/facturas');
+                        const data = await res.json();
+                        this.facturas = data.facturas || [];
+                    } catch (e) {
+                        this.facturas = [];
+                    }
+                },
+                async eliminarFactura(f) {
+                    if (!f || !confirm('¿Eliminar la factura ' + (f.numero_factura || '') + '? Esta acción no se puede deshacer.')) return;
+                    try {
+                        const res = await fetch('/dashboard/api/facturas/' + f.id, { method: 'DELETE' });
+                        const data = await res.json().catch(() => ({}));
+                        if (data.success) {
+                            await this.loadFacturas();
+                        } else {
+                            alert(data.error || 'Error al eliminar');
+                        }
+                    } catch (e) {
+                        alert('Error de conexión');
+                    }
+                },
+                async crearFactura() {
+                    this.savingFactura = true;
+                    this.facturaMessage = '';
+                    try {
+                        const res = await fetch('/dashboard/api/facturas', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.facturaForm)
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            this.facturaMessage = 'Factura ' + data.numero_factura + ' creada correctamente.';
+                            this.facturaForm = { cliente_nombre: '', cliente_nif: '', cliente_direccion: '', cliente_cp: '', cliente_ciudad: '', cliente_provincia: '', concepto: '', descripcion: '', totalPagado: '', ivaPct: '21', forma_pago: '' };
+                            this.actualizarResumenFactura();
+                            await this.loadFacturas();
+                        } else {
+                            this.facturaMessage = data.error || 'Error creando factura';
+                        }
+                    } catch (e) {
+                        this.facturaMessage = 'Error de conexión';
+                    } finally {
+                        this.savingFactura = false;
+                    }
+                },
+
+                async loadReputacion() {
+                    try {
+                        const [configRes, statsRes] = await Promise.all([
+                            fetch('/dashboard/api/reputacion-pro'),
+                            fetch('/dashboard/api/reputacion-pro/stats')
+                        ]);
+                        const configData = await configRes.json();
+                        const statsData = await statsRes.json();
+                        this.reputacion = { googleReviewUrl: configData.googleReviewUrl || '' };
+                        this.reputacionStats = statsData;
+                    } catch (e) {
+                        this.reputacionStats = {};
+                    }
+                },
+                async saveReputacion() {
+                    this.savingReputacion = true;
+                    this.reputacionMessage = '';
+                    try {
+                        const res = await fetch('/dashboard/api/reputacion-pro', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ googleReviewUrl: this.reputacion.googleReviewUrl || '' })
+                        });
+                        const data = await res.json();
+                        this.reputacionMessage = data.success ? 'Configuración guardada correctamente' : (data.error || 'Error');
+                        if (data.success) await this.loadReputacion();
+                    } catch (e) {
+                        this.reputacionMessage = 'Error de conexión';
+                    } finally {
+                        this.savingReputacion = false;
+                    }
+                },
+
+                async sendTestEmail() {
+                    this.testEmailMessage = '';
+                    this.testEmailSending = true;
+                    const controller = new AbortController();
+                    const timeout = setTimeout(() => controller.abort(), 15000);
+                    try {
+                        const response = await fetch('/dashboard/api/test-email', {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            signal: controller.signal
+                        });
+                        clearTimeout(timeout);
+                        const data = await response.json().catch(() => ({}));
+                        const serverError = data.error || (response.ok ? '' : 'Error del servidor.');
+                        this.testEmailMessage = data.message || serverError || (response.ok ? 'Email de prueba enviado.' : `Error ${response.status}`);
+                        if (!response.ok && serverError) {
+                            console.error('[Test email] Respuesta del servidor:', response.status, data);
+                        }
+                    } catch (e) {
+                        clearTimeout(timeout);
+                        this.testEmailMessage = e.name === 'AbortError' ? 'Tiempo de espera agotado. Revisa SMTP en Railway.' : 'Error de conexión.';
+                        console.error('[Test email] Error:', e);
+                    } finally {
+                        this.testEmailSending = false;
+                    }
+                },
+
+                addTimeRange(dayIndex) {
+                    if (!this.openingHours[dayIndex]) {
+                        this.openingHours[dayIndex] = [];
+                    }
+                    this.openingHours[dayIndex].push([9, 18]);
+                },
+
+                removeTimeRange(dayIndex, rangeIndex) {
+                    this.openingHours[dayIndex].splice(rangeIndex, 1);
+                    if (this.openingHours[dayIndex].length === 0) {
+                        delete this.openingHours[dayIndex];
+                    }
+                },
+
+                async saveHours() {
+                    this.savingHours = true;
+                    this.hoursMessage = '';
+
+                    try {
+                        const response = await fetch('/dashboard/api/opening-hours', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ openingHours: this.openingHours })
+                        });
+                        const data = await response.json();
+                        this.hoursMessage = data.success ? 'Horarios guardados correctamente' : data.error;
+                    } catch (error) {
+                        this.hoursMessage = 'Error guardando horarios';
+                    } finally {
+                        this.savingHours = false;
+                    }
+                },
+
+                async saveBlock() {
+                    if (!this.blockForm.startTime || !this.blockForm.endTime) {
+                        alert('Por favor, completa fecha de inicio y fin');
+                        return;
+                    }
+
+                    try {
+                        // Convertir datetime-local a ISO
+                        const startISO = new Date(this.blockForm.startTime).toISOString();
+                        const endISO = new Date(this.blockForm.endTime).toISOString();
+
+                        const response = await fetch('/dashboard/api/blocked-slots', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                startTime: startISO,
+                                endTime: endISO,
+                                reason: this.blockForm.reason
+                            })
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            this.blockForm = { startTime: '', endTime: '', reason: '' };
+                            this.showBlockForm = false;
+                            await this.loadBlockedSlots();
+                        } else {
+                            alert(data.error || 'Error guardando bloqueo');
+                        }
+                    } catch (error) {
+                        console.error('Error guardando bloqueo:', error);
+                        alert('Error al guardar el bloqueo');
+                    }
+                },
+
+                async deleteBlock(id) {
+                    if (!confirm('¿Estás seguro de eliminar este bloqueo?')) return;
+
+                    try {
+                        const response = await fetch(`/dashboard/api/blocked-slots/${id}`, {
+                            method: 'DELETE'
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            await this.loadBlockedSlots();
+                        }
+                    } catch (error) {
+                        console.error('Error eliminando bloqueo:', error);
+                        alert('Error al eliminar el bloqueo');
+                    }
+                },
+
+                async createUser() {
+                    this.creatingUser = true;
+                    this.userMessage = '';
+
+                    try {
+                        const response = await fetch('/dashboard/api/users', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.userForm)
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            this.userMessage = 'Usuario creado correctamente';
+                            this.userForm = { name: '', email: '', password: '' };
+                            this.showUserForm = false;
+                            await this.loadUsers();
+                        } else {
+                            this.userMessage = data.error || 'Error creando usuario';
+                        }
+                    } catch (error) {
+                        this.userMessage = 'Error creando usuario';
+                    } finally {
+                        this.creatingUser = false;
+                    }
+                },
+
+                async logout() {
+                    try {
+                        await fetch('/dashboard/logout', { method: 'POST' });
+                        window.location.href = '/login';
+                    } catch (error) {
+                        window.location.href = '/login';
+                    }
+                },
+
+                formatDate(dateString) {
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString('es-ES', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                },
+
+                formatTime(dateString) {
+                    const date = new Date(dateString);
+                    return date.toLocaleTimeString('es-ES', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                }
+            }
+        }
+    </script>
+</body>
+</html>

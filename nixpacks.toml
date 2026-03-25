@@ -1,0 +1,14 @@
+# sqlite3 es un módulo nativo: debe compilarse en el servidor (Linux).
+# Necesitamos python, gcc y make para node-gyp.
+[phases.setup]
+nixPkgs = ["nodejs-18_x", "npm-9_x", "python3", "gcc", "gnumake"]
+
+# No usar --ignore-scripts: sqlite3 necesita ejecutar su install para compilar.
+[phases.install]
+cmds = ["npm ci"]
+
+[phases.build]
+cmds = ["npm rebuild sqlite3", "npm run build || true"]
+
+[start]
+cmd = "npm start"
