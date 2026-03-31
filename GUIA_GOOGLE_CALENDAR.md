@@ -72,3 +72,36 @@ No hace falta configurar nada por cada profesional: **una sola** app de Google s
 | Horarios ocupados en Google    | —                            | No se ofrecen en la web si activas la opción |
 
 Todo es **universal**: cada cliente conecta su cuenta con un clic y funciona con su propio calendario.
+
+---
+
+## Preguntas frecuentes
+
+### ¿Basta con pegar un enlace de Google Calendar?
+
+**No.** Google no permite “enganchar” un calendario público solo con un URL para crear eventos en nombre del usuario. Hace falta:
+
+1. Un **proyecto en Google Cloud** con **Google Calendar API** activada.
+2. Credenciales **OAuth** (ID de cliente + secreto).
+3. En **URIs de redirección** de OAuth, la ruta exacta de tu app, por ejemplo en Railway:
+   - `https://mariopersonaltrainer-production.up.railway.app/dashboard/api/google-calendar/callback`  
+   (cámbiala por tu dominio si usas uno propio).
+4. Variables **`GOOGLE_CLIENT_ID`** y **`GOOGLE_CLIENT_SECRET`** en Railway (Variables del servicio).
+
+Después, **desde el panel** → Configuración → **Conectar con Google Calendar** (flujo OAuth). Eso autoriza a la app a usar **tu** calendario (normalmente el calendario `primary`).
+
+### ¿Dónde veo las reservas?
+
+- **En el panel de esta aplicación** (Citas): ahí están las reservas **guardadas en la base de datos** de la web.
+- **En Google Calendar**: cada reserva sincronizada aparece como **evento** (“Cita: …”). Puedes abrir Google Calendar en el móvil o en [calendar.google.com](https://calendar.google.com) y verlas igual que el resto de eventos.
+
+La app **no importa** automáticamente al panel todos los eventos que solo existan en Google (reuniones añadidas a mano, etc.). Esos eventos **sí** pueden hacer que un hueco deje de ofrecerse en la web si activas **«Usar también mi Google Calendar para no ofrecer huecos ocupados»** (consulta “busy” de Google al calcular horarios).
+
+### Resumen rápido
+
+| Qué quieres | Cómo lo cubre la app |
+|-------------|----------------------|
+| Que una reserva nueva **aparezca en Google** | Conectar OAuth + reservas desde web/panel → se crea el evento en Google. |
+| Que **Google bloquee** huecos en la web | Activar la casilla de “huecos ocupados” (arriba). |
+| Ver solo en Google el calendario completo | Abre Google Calendar; los de la web estarán como eventos sincronizados. |
+| Que eventos creados solo en Google **salgan como citas en el panel** | No está implementado como importación automática; el panel es la fuente de citas de la app. |
