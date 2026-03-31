@@ -26,6 +26,7 @@ const facturasService = require('../lib/facturas');
 const { sendTestEmailWithNegocio } = require('../lib/email-negocio');
 const reputacionPro = require('../lib/reputacion-pro');
 const googleCalendar = require('../lib/google-calendar');
+const { mergeLandingDefaults } = require('../utils/landing-content');
 
 // Textos legales RGPD de ejemplo (cuando no hay nada guardado)
 const TEXTOS_LEGALES_EJEMPLO = {
@@ -477,19 +478,10 @@ router.get('/api/landing', async (req, res) => {
     const negocioId = req.negocioId || 1;
     const row = await getQuery('SELECT content FROM landing_page WHERE negocio_id = ?', [negocioId]);
     if (!row || !row.content) {
-      return res.json({
-        hero_title: '',
-        hero_subtitle: '',
-        hero_image_url: '',
-        about_title: '',
-        about_text: '',
-        about_image_url: '',
-        cta_text: 'Reservar cita',
-        sections: []
-      });
+      return res.json(mergeLandingDefaults({}));
     }
     const content = typeof row.content === 'string' ? JSON.parse(row.content) : row.content;
-    res.json(content);
+    res.json(mergeLandingDefaults(content));
   } catch (error) {
     res.status(500).json({ error: 'Error obteniendo landing' });
   }
@@ -507,7 +499,12 @@ router.post('/api/landing', async (req, res) => {
       about_text: content.about_text || '',
       about_image_url: content.about_image_url || '',
       cta_text: content.cta_text || 'Reservar cita',
-      sections: Array.isArray(content.sections) ? content.sections : []
+      sections: Array.isArray(content.sections) ? content.sections : [],
+      seo_meta_title: content.seo_meta_title != null ? String(content.seo_meta_title) : '',
+      seo_meta_description: content.seo_meta_description != null ? String(content.seo_meta_description) : '',
+      seo_keywords: content.seo_keywords != null ? String(content.seo_keywords) : '',
+      seo_canonical_url: content.seo_canonical_url != null ? String(content.seo_canonical_url).trim() : '',
+      seo_og_image_url: content.seo_og_image_url != null ? String(content.seo_og_image_url).trim() : ''
     });
     const existing = await getQuery('SELECT negocio_id FROM landing_page WHERE negocio_id = ?', [negocioId]);
     if (existing) {

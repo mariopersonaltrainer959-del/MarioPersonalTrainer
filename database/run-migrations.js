@@ -6,6 +6,7 @@
  */
 const { runQuery, getQuery, allQuery } = require('../utils/db');
 const config = require('../config');
+const { DEFAULT_LANDING } = require('../utils/landing-content');
 
 const DEFAULT_NEGOCIO_ID = 1;
 
@@ -314,21 +315,32 @@ Derechos: Puede ejercer sus derechos de acceso, rectificación, supresión, limi
       console.log('✅ Textos legales RGPD de ejemplo actualizados (campos vacíos)');
     }
 
-    // --- Contenido por defecto landing page ---
-    const defaultLanding = JSON.stringify({
-      hero_title: 'Bienvenido a tu espacio de bienestar',
-      hero_subtitle: 'Acompañamiento profesional para tu crecimiento personal y salud emocional. Reserva tu cita de forma sencilla.',
-      hero_image_url: '',
-      about_title: 'Sobre la consulta',
-      about_text: 'Ofrecemos un espacio de escucha y acompañamiento profesional. La primera sesión es una oportunidad para conocernos y establecer objetivos. Si necesitas modificar o cancelar tu cita, contáctanos con al menos 24 horas de antelación.',
-      about_image_url: '',
-      cta_text: 'Reservar cita',
-      sections: []
-    });
+    // --- Contenido por defecto landing page (Mario Personal Trainer + SEO) ---
+    const defaultLanding = JSON.stringify(DEFAULT_LANDING);
     const landingRow = await getQuery('SELECT negocio_id FROM landing_page WHERE negocio_id = ?', [DEFAULT_NEGOCIO_ID]);
     if (!landingRow) {
       await runQuery('INSERT INTO landing_page (negocio_id, content) VALUES (?, ?)', [DEFAULT_NEGOCIO_ID, defaultLanding]);
       console.log('✅ Landing page por defecto creada');
+    } else {
+      // Sustituir solo la plantilla genérica antigua por la de Mario / Estepona + SEO
+      try {
+        const lr = await getQuery('SELECT content FROM landing_page WHERE negocio_id = ?', [DEFAULT_NEGOCIO_ID]);
+        if (lr && lr.content) {
+          const j = JSON.parse(lr.content);
+          const oldHero = 'Bienvenido a tu espacio de bienestar';
+          const oldSub =
+            'Acompañamiento profesional para tu crecimiento personal y salud emocional. Reserva tu cita de forma sencilla.';
+          if (j.hero_title === oldHero && String(j.hero_subtitle || '').trim() === oldSub) {
+            await runQuery('UPDATE landing_page SET content = ?, updated_at = CURRENT_TIMESTAMP WHERE negocio_id = ?', [
+              defaultLanding,
+              DEFAULT_NEGOCIO_ID
+            ]);
+            console.log('✅ Landing actualizada a Mario Personal Trainer (Estepona) + SEO');
+          }
+        }
+      } catch (e) {
+        console.warn('[Migration] No se pudo comprobar/actualizar landing antigua:', e.message);
+      }
     }
 
     // --- ReputacionPro: tablas y columnas para reseñas Google ---

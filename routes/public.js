@@ -8,6 +8,7 @@ const pacientesService = require('../lib/pacientes');
 const citasService = require('../lib/citas');
 const negocioService = require('../lib/negocio');
 const reputacionPro = require('../lib/reputacion-pro');
+const { mergeLandingDefaults, mergeLandingDefaultsFromContentString } = require('../utils/landing-content');
 
 const NEGOCIO_ID = 1;
 
@@ -35,31 +36,13 @@ router.get('/api/landing', async (req, res) => {
   try {
     const row = await getQuery('SELECT content FROM landing_page WHERE negocio_id = ?', [NEGOCIO_ID]);
     if (!row || !row.content) {
-      return res.json({
-        hero_title: '',
-        hero_subtitle: '',
-        hero_image_url: '',
-        about_title: '',
-        about_text: '',
-        about_image_url: '',
-        cta_text: 'Reservar cita',
-        sections: []
-      });
+      return res.json(mergeLandingDefaults({}));
     }
     const content = typeof row.content === 'string' ? JSON.parse(row.content) : row.content;
-    res.json(content);
+    res.json(mergeLandingDefaults(content));
   } catch (error) {
     console.error('Error obteniendo landing:', error);
-    res.json({
-      hero_title: '',
-      hero_subtitle: '',
-      hero_image_url: '',
-      about_title: '',
-      about_text: '',
-      about_image_url: '',
-      cta_text: 'Reservar cita',
-      sections: []
-    });
+    res.json(mergeLandingDefaults({}));
   }
 });
 

@@ -455,7 +455,7 @@
             <div x-show="activeTab === 'landing'">
                 <div class="card bg-white p-6">
                     <h2 class="text-2xl font-bold text-gray-900 mb-2">Landing page</h2>
-                    <p class="text-sm text-gray-500 mb-6">Contenido de tu web pública. Los visitantes verán esta información y podrán reservar cita desde el botón. Puedes usar URLs de imágenes (ej. Imgur, tu dominio).</p>
+                    <p class="text-sm text-gray-500 mb-6">Contenido de tu web pública (Mario Personal Trainer · Estepona). Incluye textos para buscadores (SEO). Los visitantes reservan desde el botón. Imágenes: URL o subida.</p>
                     <form @submit.prevent="saveLanding()" class="space-y-6">
                         <div class="border-b border-gray-100 pb-6">
                             <h3 class="font-semibold text-gray-900 mb-3">Cabecera (hero)</h3>
@@ -501,9 +501,20 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="border-b border-gray-100 pb-6">
+                            <h3 class="font-semibold text-gray-900 mb-1">SEO (Google / redes)</h3>
+                            <p class="text-xs text-gray-500 mb-3">Título y descripción que verán Google y al compartir el enlace. Incluye «Estepona» y «entrenador personal» para posicionar mejor.</p>
+                            <div class="space-y-4">
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Meta título (~50–60 caracteres)</label><input type="text" x-model="landing.seo_meta_title" class="input-modern" placeholder="Mario Personal Trainer Estepona | Entrenamiento personal"></div>
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Meta descripción (~150–160 caracteres)</label><textarea x-model="landing.seo_meta_description" rows="3" class="input-modern" placeholder="Entrenador personal en Estepona. Sesiones a medida. Reserva online."></textarea></div>
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Palabras clave (opcional, separadas por comas)</label><input type="text" x-model="landing.seo_keywords" class="input-modern" placeholder="entrenador personal Estepona, fitness Estepona"></div>
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">URL canónica (opcional)</label><input type="url" x-model="landing.seo_canonical_url" class="input-modern" placeholder="https://tudominio.com/"></div>
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Imagen Open Graph (opcional, URL absoluta o ruta)</label><input type="text" x-model="landing.seo_og_image_url" class="input-modern" placeholder="Dejar vacío para usar la imagen del hero"></div>
+                            </div>
+                        </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Texto del botón de reserva</label>
-                            <input type="text" x-model="landing.cta_text" class="input-modern w-64" placeholder="Reservar cita">
+                            <input type="text" x-model="landing.cta_text" class="input-modern w-64" placeholder="Reservar sesión">
                         </div>
                         <button type="submit" :disabled="savingLanding" class="btn-primary">Guardar landing</button>
                         <a href="/" target="_blank" rel="noopener" class="btn-secondary ml-2">Ver mi web pública</a>
@@ -1021,7 +1032,7 @@
                 textosLegales: { politica_privacidad: '', consentimiento: '', version: '1' },
                 savingTextosLegales: false,
                 textosLegalesMessage: '',
-                landing: { hero_title: '', hero_subtitle: '', hero_image_url: '', about_title: '', about_text: '', about_image_url: '', cta_text: 'Reservar cita', sections: [] },
+                landing: { hero_title: '', hero_subtitle: '', hero_image_url: '', about_title: '', about_text: '', about_image_url: '', cta_text: 'Reservar sesión', sections: [], seo_meta_title: '', seo_meta_description: '', seo_keywords: '', seo_canonical_url: '', seo_og_image_url: '' },
                 savingLanding: false,
                 landingMessage: '',
                 uploadingImageHero: false,
@@ -1551,11 +1562,16 @@
                             about_title: data.about_title || '',
                             about_text: data.about_text || '',
                             about_image_url: data.about_image_url || '',
-                            cta_text: data.cta_text || 'Reservar cita',
-                            sections: Array.isArray(data.sections) ? data.sections : []
+                            cta_text: data.cta_text || 'Reservar sesión',
+                            sections: Array.isArray(data.sections) ? data.sections : [],
+                            seo_meta_title: data.seo_meta_title != null ? data.seo_meta_title : '',
+                            seo_meta_description: data.seo_meta_description != null ? data.seo_meta_description : '',
+                            seo_keywords: data.seo_keywords != null ? data.seo_keywords : '',
+                            seo_canonical_url: data.seo_canonical_url != null ? data.seo_canonical_url : '',
+                            seo_og_image_url: data.seo_og_image_url != null ? data.seo_og_image_url : ''
                         };
                     } catch (e) {
-                        this.landing = { hero_title: '', hero_subtitle: '', hero_image_url: '', about_title: '', about_text: '', about_image_url: '', cta_text: 'Reservar cita', sections: [] };
+                        this.landing = { hero_title: '', hero_subtitle: '', hero_image_url: '', about_title: '', about_text: '', about_image_url: '', cta_text: 'Reservar sesión', sections: [], seo_meta_title: '', seo_meta_description: '', seo_keywords: '', seo_canonical_url: '', seo_og_image_url: '' };
                     }
                 },
 

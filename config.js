@@ -6,10 +6,10 @@
  */
 
 module.exports = {
-  // Información del negocio (pueden sobrescribirse con variables de entorno)
-  businessName: process.env.BUSINESS_NAME || "Psicología [Tu Nombre]",
+  // Información del negocio (pueden sobrescribirse con variables de entorno o desde el dashboard)
+  businessName: process.env.BUSINESS_NAME || "Mario Personal Trainer",
   businessPhone: process.env.BUSINESS_PHONE || "+34 600 000 000",
-  businessEmail: process.env.BUSINESS_EMAIL || "contacto@tudominio.com",
+  businessEmail: process.env.BUSINESS_EMAIL || "contacto@mariopersonaltrainer.es",
   
   // Configuración de citas
   appointmentDuration: 50, // Duración por defecto en minutos (configurable desde dashboard)
