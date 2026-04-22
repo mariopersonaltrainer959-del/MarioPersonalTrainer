@@ -1773,14 +1773,20 @@
                     }
                 },
                 getBlockedInCell(dateStr, hour) {
-                    // Mostrar bloqueos que empiezan en esa hora y día (suficiente para vista semanal por horas)
-                    const startHour = String(hour).padStart(2, '0') + ':00';
+                    // Mostrar bloqueos que SOLAPAN esa hora (no solo los que empiezan en punto).
+                    // Si el evento de Google empieza 10:30, debe verse en la celda de 10:00.
+                    const cellStart = new Date(`${dateStr}T${String(hour).padStart(2, '0')}:00:00`);
+                    const cellEnd = new Date(cellStart.getTime() + 60 * 60 * 1000);
                     return (this.blockedSlots || []).filter((b) => {
                         if (!b || !b.start_time) return false;
-                        const d = new Date(b.start_time);
-                        const date = d.toISOString().slice(0, 10);
-                        const hh = d.toTimeString().slice(0, 5);
-                        return date === dateStr && hh === startHour;
+                        const start = new Date(b.start_time);
+                        const end = b.end_time ? new Date(b.end_time) : null;
+                        if (Number.isNaN(start.getTime())) return false;
+                        const startDate = start.toISOString().slice(0, 10);
+                        if (startDate !== dateStr) return false;
+                        const endMs = end && !Number.isNaN(end.getTime()) ? end.getTime() : (start.getTime() + 30 * 60 * 1000);
+                        // Solape: start < cellEnd && end > cellStart
+                        return start.getTime() < cellEnd.getTime() && endMs > cellStart.getTime();
                     });
                 },
 
