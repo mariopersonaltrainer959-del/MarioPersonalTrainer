@@ -899,7 +899,12 @@ router.post('/api/google-calendar/calendar-id', async (req, res) => {
     if (!connected) return res.status(400).json({ error: 'Conecta Google Calendar primero.' });
     const calendarId = req.body && req.body.calendarId;
     await googleCalendar.setCalendarId(negocioId, calendarId);
-    res.json({ success: true, calendarId: String(calendarId || '').trim() });
+    const { getQuery } = require('../utils/db');
+    const row = await getQuery('SELECT google_calendar_calendar_id FROM negocio WHERE id = ?', [negocioId]).catch(() => null);
+    res.json({
+      success: true,
+      calendarId: (row && row.google_calendar_calendar_id) ? row.google_calendar_calendar_id : String(calendarId || '').trim()
+    });
   } catch (e) {
     res.status(400).json({ error: e.message });
   }

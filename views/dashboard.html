@@ -1515,10 +1515,15 @@
                         const res = await fetch('/dashboard/api/google-calendar/calendars');
                         const data = await res.json();
                         const items = Array.isArray(data.calendars) ? data.calendars : [];
-                        // asegurar que el seleccionado exista (si no, meter primary)
+                        // Si no llega lista (error o permisos), NO pisar el seleccionado.
+                        // Asegurar que el calendarId guardado se pueda mantener seleccionado.
                         this.googleCalendarCalendars = items.length > 0 ? items : [{ id: 'primary', summary: 'Primary', primary: true }];
-                        const exists = this.googleCalendarCalendars.some((c) => c.id === this.googleCalendarCalendarId);
-                        if (!exists) this.googleCalendarCalendarId = 'primary';
+                        const selected = this.googleCalendarCalendarId || 'primary';
+                        const exists = this.googleCalendarCalendars.some((c) => c.id === selected);
+                        if (!exists && selected) {
+                            // Añadir placeholder para que el usuario vea lo que está guardado en BD
+                            this.googleCalendarCalendars.unshift({ id: selected, summary: selected + ' (guardado)', primary: false });
+                        }
                     } catch (e) {
                         this.googleCalendarCalendars = [{ id: 'primary', summary: 'Primary', primary: true }];
                         this.googleCalendarCalendarId = this.googleCalendarCalendarId || 'primary';
@@ -1551,7 +1556,9 @@
                         });
                         const data = await res.json();
                         if (data && data.success) {
+                            if (data.calendarId) this.googleCalendarCalendarId = data.calendarId;
                             this.googleCalendarMessage = 'Calendario guardado correctamente.';
+                            await this.loadGoogleCalendarStatus();
                         } else {
                             this.googleCalendarMessage = data.error || 'No se pudo guardar el calendario.';
                         }
