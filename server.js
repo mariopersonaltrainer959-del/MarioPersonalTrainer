@@ -71,53 +71,62 @@ runQuery('ALTER TABLE appointments ADD COLUMN client_phone TEXT').catch(() => {}
 
 // Migraciones multi-negocio (negocio, pacientes, citas, plantillas, textos legales)
 const { runMigrations } = require('./database/run-migrations');
-runMigrations().catch((err) => console.error('Error en migraciones:', err));
+async function bootstrap() {
+  // Asegurar migraciones antes de atender peticiones (evita "no such column" al cargar el dashboard)
+  try {
+    await runMigrations();
+  } catch (err) {
+    console.error('Error en migraciones:', err);
+  }
 
-// Job diario de recordatorios (citas del día siguiente). Se ejecuta una vez al día a las 8:00 (hora local).
-const { runReminders } = require('./lib/reminder-job');
-let lastReminderDate = null;
-setInterval(() => {
-  const now = new Date();
-  if (now.getHours() !== 8) return;
-  const today = now.toISOString().slice(0, 10);
-  if (lastReminderDate === today) return;
-  lastReminderDate = today;
-  runReminders()
-    .then((r) => { if (r.sent > 0) console.log('📧 Recordatorios enviados:', r.sent); })
-    .catch((e) => console.error('Error job recordatorios:', e.message));
-}, 60 * 60 * 1000);
+  // Job diario de recordatorios (citas del día siguiente). Se ejecuta una vez al día a las 8:00 (hora local).
+  const { runReminders } = require('./lib/reminder-job');
+  let lastReminderDate = null;
+  setInterval(() => {
+    const now = new Date();
+    if (now.getHours() !== 8) return;
+    const today = now.toISOString().slice(0, 10);
+    if (lastReminderDate === today) return;
+    lastReminderDate = today;
+    runReminders()
+      .then((r) => { if (r.sent > 0) console.log('📧 Recordatorios enviados:', r.sent); })
+      .catch((e) => console.error('Error job recordatorios:', e.message));
+  }, 60 * 60 * 1000);
 
-// ReputacionPro: procesar jobs de solicitud de reseña (cada minuto; envío 3h después de cita completada).
-const { processDueJobs } = require('./lib/reputacion-pro/jobs');
-setInterval(() => {
-  processDueJobs()
-    .then(() => {})
-    .catch((e) => console.error('Error job ReputacionPro:', e.message));
-}, 60 * 1000);
+  // ReputacionPro: procesar jobs de solicitud de reseña (cada minuto; envío 3h después de cita completada).
+  const { processDueJobs } = require('./lib/reputacion-pro/jobs');
+  setInterval(() => {
+    processDueJobs()
+      .then(() => {})
+      .catch((e) => console.error('Error job ReputacionPro:', e.message));
+  }, 60 * 1000);
 
-// Iniciar servidor
-const PORT = process.env.PORT || config.port || 3000;
-app.listen(PORT, '0.0.0.0', async () => {
-  console.log(`\n🚀 Servidor iniciado en puerto ${PORT}`);
-  if (process.env.NODE_ENV === 'production') {
-    try {
-      const { allQuery } = require('./utils/db');
-      const rows = await allQuery('SELECT COUNT(*) as c FROM users');
-      const n = (rows[0] && rows[0].c) || 0;
-      console.log('👥 Usuarios en BD:', n, n === 0 ? '(crea uno en /setup)' : '');
-    } catch (e) {
-      console.warn('No se pudo leer número de usuarios:', e.message);
+  // Iniciar servidor
+  const PORT = process.env.PORT || config.port || 3000;
+  app.listen(PORT, '0.0.0.0', async () => {
+    console.log(`\n🚀 Servidor iniciado en puerto ${PORT}`);
+    if (process.env.NODE_ENV === 'production') {
+      try {
+        const { allQuery } = require('./utils/db');
+        const rows = await allQuery('SELECT COUNT(*) as c FROM users');
+        const n = (rows[0] && rows[0].c) || 0;
+        console.log('👥 Usuarios en BD:', n, n === 0 ? '(crea uno en /setup)' : '');
+      } catch (e) {
+        console.warn('No se pudo leer número de usuarios:', e.message);
+      }
     }
-  }
-  if (process.env.NODE_ENV !== 'production') {
-    console.log(`📋 Landing pública: http://localhost:${PORT}`);
-    console.log(`🔐 Dashboard: http://localhost:${PORT}/dashboard`);
-    console.log(`\n⚠️  IMPORTANTE: Asegúrate de haber ejecutado:`);
-    console.log(`   1. npm install`);
-    console.log(`   2. node database/init.js`);
-    console.log(`   3. node utils/create-user.js\n`);
-  }
-});
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`📋 Landing pública: http://localhost:${PORT}`);
+      console.log(`🔐 Dashboard: http://localhost:${PORT}/dashboard`);
+      console.log(`\n⚠️  IMPORTANTE: Asegúrate de haber ejecutado:`);
+      console.log(`   1. npm install`);
+      console.log(`   2. node database/init.js`);
+      console.log(`   3. node utils/create-user.js\n`);
+    }
+  });
+}
+
+bootstrap();
 
 // Apagado graceful: al recibir SIGTERM/SIGINT (p. ej. Railway para el deploy anterior),
 // dar unos segundos para que terminen escrituras a la BD y salir limpio.
