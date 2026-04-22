@@ -30,42 +30,76 @@ if (process.env.NODE_ENV === 'production') {
 
 function getDb() {
   const db = new sqlite3.Database(dbPath);
+  // Si la BD está ocupada, esperar un poco en vez de fallar con SQLITE_LOCKED
+  try {
+    db.configure('busyTimeout', 5000);
+  } catch (_) {}
   db.run('PRAGMA synchronous = FULL');
-  db.run('PRAGMA journal_mode = DELETE');
+  // WAL reduce bloqueos en concurrencia (Railway puede hacer varias queries al arrancar).
+  db.run('PRAGMA journal_mode = WAL');
   return db;
 }
 
+function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+async function withRetry(fn, { tries = 6, baseDelayMs = 80 } = {}) {
+  let lastErr = null;
+  for (let i = 0; i < tries; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+      const msg = String(err && err.message ? err.message : err);
+      const locked = /SQLITE_LOCKED|SQLITE_BUSY|database table is locked|database is locked/i.test(msg);
+      if (!locked) throw err;
+      await sleep(baseDelayMs * Math.pow(2, i));
+    }
+  }
+  throw lastErr;
+}
+
 function runQuery(query, params = []) {
-  return new Promise((resolve, reject) => {
-    const db = getDb();
-    db.run(query, params, function (err) {
-      db.close();
-      if (err) reject(err);
-      else resolve({ lastID: this.lastID, changes: this.changes });
-    });
-  });
+  return withRetry(
+    () =>
+      new Promise((resolve, reject) => {
+        const db = getDb();
+        db.run(query, params, function (err) {
+          db.close();
+          if (err) reject(err);
+          else resolve({ lastID: this.lastID, changes: this.changes });
+        });
+      })
+  );
 }
 
 function getQuery(query, params = []) {
-  return new Promise((resolve, reject) => {
-    const db = getDb();
-    db.get(query, params, (err, row) => {
-      db.close();
-      if (err) reject(err);
-      else resolve(row || null);
-    });
-  });
+  return withRetry(
+    () =>
+      new Promise((resolve, reject) => {
+        const db = getDb();
+        db.get(query, params, (err, row) => {
+          db.close();
+          if (err) reject(err);
+          else resolve(row || null);
+        });
+      })
+  );
 }
 
 function allQuery(query, params = []) {
-  return new Promise((resolve, reject) => {
-    const db = getDb();
-    db.all(query, params, (err, rows) => {
-      db.close();
-      if (err) reject(err);
-      else resolve(rows || []);
-    });
-  });
+  return withRetry(
+    () =>
+      new Promise((resolve, reject) => {
+        const db = getDb();
+        db.all(query, params, (err, rows) => {
+          db.close();
+          if (err) reject(err);
+          else resolve(rows || []);
+        });
+      })
+  );
 }
 
 module.exports = {

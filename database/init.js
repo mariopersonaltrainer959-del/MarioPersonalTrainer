@@ -22,8 +22,11 @@ try {
   if (process.env.NODE_ENV === 'production') console.log('📂 Archivo BD al arrancar:', dbFileExistedBeforeInit ? 'ya existía' : 'nuevo', '| (no se pudo stat:', e.message + ')');
 }
 const db = new sqlite3.Database(dbPath);
+try {
+  db.configure('busyTimeout', 5000);
+} catch (_) {}
 db.run('PRAGMA synchronous = FULL');
-db.run('PRAGMA journal_mode = DELETE');
+db.run('PRAGMA journal_mode = WAL');
 
 async function initDatabase() {
   return new Promise((resolve, reject) => {
