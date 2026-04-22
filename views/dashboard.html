@@ -753,7 +753,7 @@
                                     </label>
                                     <label class="flex items-center gap-2 mb-3 cursor-pointer">
                                         <input type="checkbox" x-model="googleCalendarImportEnabled" @change="saveGoogleCalendarImportEnabled()">
-                                        <span class="text-sm">Importar eventos de este calendario al panel (aparecerán como bloqueos)</span>
+                                        <span class="text-sm">Importar eventos de este calendario al panel (se crearán como entrenos)</span>
                                     </label>
                                     <button type="button" @click="syncGoogleCalendarNow()" :disabled="googleCalendarSyncingNow" class="btn-secondary mb-3">
                                         <span x-show="!googleCalendarSyncingNow">Sincronizar ahora desde Google</span>
@@ -1606,8 +1606,8 @@
                         const res = await fetch('/dashboard/api/google-calendar/sync-now', { method: 'POST' });
                         const data = await res.json();
                         if (data && data.ok) {
-                            this.googleCalendarMessage = `Sincronizado desde Google: ${data.created || 0} nuevos, ${data.updated || 0} actualizados, ${data.removed || 0} eliminados.`;
-                            await this.loadBlockedSlots();
+                            this.googleCalendarMessage = `Sincronizado desde Google: ${data.created || 0} nuevos, ${data.updated || 0} actualizados, ${(data.cancelled || 0)} cancelados.`;
+                            await this.loadCitas();
                         } else {
                             this.googleCalendarMessage = data.error || 'No se pudo sincronizar desde Google.';
                         }
