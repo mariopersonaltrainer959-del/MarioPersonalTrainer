@@ -26,6 +26,7 @@ const facturasService = require('../lib/facturas');
 const { sendTestEmailWithNegocio } = require('../lib/email-negocio');
 const reputacionPro = require('../lib/reputacion-pro');
 const googleCalendar = require('../lib/google-calendar');
+const googleCalendarImport = require('../lib/google-calendar-import');
 const { mergeLandingDefaults } = require('../utils/landing-content');
 
 // Textos legales RGPD de ejemplo (cuando no hay nada guardado)
@@ -920,6 +921,40 @@ router.post('/api/google-calendar/sync-busy', async (req, res) => {
     const enabled = !!req.body.enabled;
     await googleCalendar.setSyncBusy(negocioId, enabled);
     res.json({ success: true, syncBusy: enabled });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.get('/api/google-calendar/import-config', async (req, res) => {
+  try {
+    const negocioId = req.negocioId || 1;
+    const cfg = await googleCalendarImport.getImportConfig(negocioId);
+    res.json(cfg);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.post('/api/google-calendar/import-enabled', async (req, res) => {
+  try {
+    const negocioId = req.negocioId || 1;
+    const enabled = !!req.body.enabled;
+    await googleCalendarImport.setImportEnabled(negocioId, enabled);
+    res.json({ success: true, enabled });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+router.post('/api/google-calendar/sync-now', async (req, res) => {
+  try {
+    const negocioId = req.negocioId || 1;
+    const connected = await googleCalendar.isConnected(negocioId);
+    if (!connected) return res.status(400).json({ error: 'Conecta Google Calendar primero.' });
+    const r = await googleCalendarImport.syncNow(negocioId, { daysPast: 7, daysFuture: 60 });
+    if (!r.ok) return res.status(400).json({ error: r.error || 'No se pudo sincronizar' });
+    res.json(r);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

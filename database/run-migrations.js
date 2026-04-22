@@ -350,6 +350,10 @@ Derechos: Puede ejercer sus derechos de acceso, rectificación, supresión, limi
     // --- Google Calendar: tokens y sync ---
     const { runGoogleCalendarMigrations } = require('./google-calendar-migrations');
     await runGoogleCalendarMigrations();
+
+    // --- Google Calendar: importación a bloqueos ---
+    const { runGoogleCalendarImportMigrations } = require('./google-calendar-import-migrations');
+    await runGoogleCalendarImportMigrations();
   } catch (err) {
     throw err;
   }

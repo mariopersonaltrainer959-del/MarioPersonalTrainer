@@ -224,6 +224,12 @@
                                         <td class="border border-gray-200 p-1 text-gray-600 align-top" x-text="String(hour).padStart(2,'0') + ':00'"></td>
                                         <template x-for="(day, di) in getCalendarWeekDays()" :key="di">
                                             <td class="border border-gray-200 p-1 align-top min-w-[120px]">
+                                                <template x-for="b in getBlockedInCell(day.date, hour)" :key="'b' + b.id">
+                                                    <div class="text-[11px] rounded p-2 mb-1 border bg-gray-50 border-gray-200 text-gray-700">
+                                                        <div class="font-medium truncate" x-text="(b.reason || 'Ocupado')"></div>
+                                                        <div class="text-gray-500" x-text="formatBlockedTime(b.start_time)"></div>
+                                                    </div>
+                                                </template>
                                                 <template x-for="c in getCitasInCell(day.date, hour)" :key="c.id">
                                                     <div class="text-xs rounded p-2 mb-1 border cursor-pointer"
                                                          :class="c.estado === 'confirmada' ? 'bg-emerald-50 border-emerald-200' : c.estado === 'completada' ? 'bg-teal-50 border-teal-200' : c.estado === 'pasada' ? 'bg-slate-100 border-slate-200' : c.estado === 'cancelada' ? 'bg-red-50 border-red-200' : c.estado === 'pendiente' ? 'bg-amber-50 border-amber-200' : 'bg-orange-50 border-orange-200'"
@@ -745,6 +751,14 @@
                                         <input type="checkbox" x-model="googleCalendarSyncBusy" @change="saveGoogleCalendarSyncBusy()">
                                         <span class="text-sm">Usar también mi Google Calendar para no ofrecer huecos ocupados (si tienes otros eventos, no se mostrarán como disponibles en la web)</span>
                                     </label>
+                                    <label class="flex items-center gap-2 mb-3 cursor-pointer">
+                                        <input type="checkbox" x-model="googleCalendarImportEnabled" @change="saveGoogleCalendarImportEnabled()">
+                                        <span class="text-sm">Importar eventos de este calendario al panel (aparecerán como bloqueos)</span>
+                                    </label>
+                                    <button type="button" @click="syncGoogleCalendarNow()" :disabled="googleCalendarSyncingNow" class="btn-secondary mb-3">
+                                        <span x-show="!googleCalendarSyncingNow">Sincronizar ahora desde Google</span>
+                                        <span x-show="googleCalendarSyncingNow">Sincronizando...</span>
+                                    </button>
                                     <button type="button" @click="disconnectGoogleCalendar()" class="btn-secondary">Desconectar Google Calendar</button>
                                 </div>
                             </template>
@@ -1010,6 +1024,8 @@
                 googleCalendarCalendars: [],
                 googleCalendarCalendarId: 'primary',
                 googleCalendarCalendarsLoading: false,
+                googleCalendarImportEnabled: false,
+                googleCalendarSyncingNow: false,
                 slotsCitaModal: [],
                 savingModalCita: false,
                 modalCitaMessage: '',
@@ -1477,11 +1493,21 @@
                         this.googleCalendarCalendarId = data.calendarId || 'primary';
                         if (this.googleCalendarConnected) {
                             await this.loadGoogleCalendarCalendars();
+                            await this.loadGoogleCalendarImportConfig();
                         } else {
                             this.googleCalendarCalendars = [];
                         }
                     } catch (e) {
                         this.googleCalendarConnected = false;
+                    }
+                },
+                async loadGoogleCalendarImportConfig() {
+                    try {
+                        const res = await fetch('/dashboard/api/google-calendar/import-config');
+                        const data = await res.json();
+                        this.googleCalendarImportEnabled = !!data.enabled;
+                    } catch (e) {
+                        this.googleCalendarImportEnabled = false;
                     }
                 },
                 async loadGoogleCalendarCalendars() {
@@ -1553,6 +1579,36 @@
                             body: JSON.stringify({ enabled: this.googleCalendarSyncBusy })
                         });
                     } catch (e) {}
+                },
+                async saveGoogleCalendarImportEnabled() {
+                    try {
+                        await fetch('/dashboard/api/google-calendar/import-enabled', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ enabled: this.googleCalendarImportEnabled })
+                        });
+                        if (this.googleCalendarImportEnabled) {
+                            // primera sync para que el usuario vea algo inmediato
+                            await this.syncGoogleCalendarNow();
+                        }
+                    } catch (e) {}
+                },
+                async syncGoogleCalendarNow() {
+                    this.googleCalendarSyncingNow = true;
+                    try {
+                        const res = await fetch('/dashboard/api/google-calendar/sync-now', { method: 'POST' });
+                        const data = await res.json();
+                        if (data && data.ok) {
+                            this.googleCalendarMessage = `Sincronizado desde Google: ${data.created || 0} nuevos, ${data.updated || 0} actualizados, ${data.removed || 0} eliminados.`;
+                            await this.loadBlockedSlots();
+                        } else {
+                            this.googleCalendarMessage = data.error || 'No se pudo sincronizar desde Google.';
+                        }
+                    } catch (e) {
+                        this.googleCalendarMessage = 'Error sincronizando desde Google.';
+                    } finally {
+                        this.googleCalendarSyncingNow = false;
+                    }
                 },
 
                 async saveSmtp() {
@@ -1700,6 +1756,25 @@
                     } catch (error) {
                         console.error('Error cargando bloqueos:', error);
                     }
+                },
+                formatBlockedTime(ts) {
+                    try {
+                        const d = new Date(ts);
+                        return d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                    } catch (e) {
+                        return '';
+                    }
+                },
+                getBlockedInCell(dateStr, hour) {
+                    // Mostrar bloqueos que empiezan en esa hora y día (suficiente para vista semanal por horas)
+                    const startHour = String(hour).padStart(2, '0') + ':00';
+                    return (this.blockedSlots || []).filter((b) => {
+                        if (!b || !b.start_time) return false;
+                        const d = new Date(b.start_time);
+                        const date = d.toISOString().slice(0, 10);
+                        const hh = d.toTimeString().slice(0, 5);
+                        return date === dateStr && hh === startHour;
+                    });
                 },
 
                 async loadUsers() {
