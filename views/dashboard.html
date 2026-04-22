@@ -295,10 +295,21 @@
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Fecha *</label><input type="date" x-model="modalCita.fecha" @change="loadSlotsCitaModal()" :min="getMinDateForNew()" class="input-modern" required></div>
-                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Hora *</label><select x-model="modalCita.hora_inicio" @change="setHoraFinFromSlot()" class="input-modern" required :disabled="!modalCita.fecha || slotsCitaModal.length === 0">
-                                    <option value="">Elegir</option>
-                                    <template x-for="s in slotsCitaModal" :key="s.hora_inicio"><option :value="s.hora_inicio" x-text="s.display || s.hora_inicio"></option></template>
-                                </select></div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Hora *</label>
+                                    <template x-if="slotsCitaModal.length > 0">
+                                        <select x-model="modalCita.hora_inicio" @change="setHoraFinFromSlot()" class="input-modern" required :disabled="!modalCita.fecha">
+                                            <option value="">Elegir</option>
+                                            <template x-for="s in slotsCitaModal" :key="s.hora_inicio"><option :value="s.hora_inicio" x-text="s.display || s.hora_inicio"></option></template>
+                                        </select>
+                                    </template>
+                                    <template x-if="slotsCitaModal.length === 0">
+                                        <input type="time" x-model="modalCita.hora_inicio" @change="setHoraFinFromManual()" class="input-modern" required :disabled="!modalCita.fecha">
+                                    </template>
+                                    <p x-show="modalCita.fecha && slotsCitaModal.length === 0" class="text-xs text-gray-500 mt-1">
+                                        No hay huecos disponibles para ese día. Puedes introducir una hora manualmente.
+                                    </p>
+                                </div>
                             </div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Tipo sesión</label><select x-model="modalCita.tipo_sesion" class="input-modern"><option value="">—</option><option value="online">Online</option><option value="presencial">Presencial</option></select></div>
                             <div x-show="modalCita.id"><label class="block text-sm font-medium text-gray-700 mb-1">Estado</label><select x-model="modalCita.estado" class="input-modern"><option value="confirmada">Confirmada</option><option value="pendiente">Pendiente</option><option value="pasada">Pasada</option><option value="no_asistio">No asistió</option><option value="completada">Completada</option><option value="cancelada">Cancelada</option></select><p class="text-xs text-gray-500 mt-1">Si marcas «Completada», se enviará automáticamente una solicitud de reseña al paciente 3 horas después.</p></div>
@@ -1402,6 +1413,21 @@
                     const s = this.slotsCitaModal.find(x => x.hora_inicio === this.modalCita.hora_inicio);
                     this.modalCita.hora_fin = s ? s.hora_fin : '';
                 },
+                setHoraFinFromManual() {
+                    try {
+                        const dur = parseInt(this.config.appointmentDuration || 50, 10) || 50;
+                        const hi = String(this.modalCita.hora_inicio || '').trim().slice(0, 5);
+                        if (!hi || hi.length !== 5) { this.modalCita.hora_fin = ''; return; }
+                        const [h, m] = hi.split(':').map(Number);
+                        if (!Number.isFinite(h) || !Number.isFinite(m)) { this.modalCita.hora_fin = ''; return; }
+                        const endMin = h * 60 + m + dur;
+                        const eh = Math.floor(endMin / 60) % 24;
+                        const em = endMin % 60;
+                        this.modalCita.hora_fin = `${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}`;
+                    } catch (e) {
+                        this.modalCita.hora_fin = '';
+                    }
+                },
 
                 async saveModalCita() {
                     this.savingModalCita = true;
@@ -1417,11 +1443,14 @@
                             if (data.success) { this.modalCita.show = false; await this.loadCitas(); }
                             else this.modalCitaMessage = data.error || 'Error';
                         } else {
-                            if (!this.modalCita.hora_fin) this.setHoraFinFromSlot();
+                            if (!this.modalCita.hora_fin) {
+                                if (this.slotsCitaModal.length > 0) this.setHoraFinFromSlot();
+                                else this.setHoraFinFromManual();
+                            }
                             const res = await fetch('/dashboard/api/citas', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ paciente_id: this.modalCita.paciente_id, fecha: this.modalCita.fecha, hora_inicio: this.modalCita.hora_inicio, hora_fin: this.modalCita.hora_fin, tipo_sesion: this.modalCita.tipo_sesion || null, notas: this.modalCita.notas || null, estado: 'confirmada' })
+                                body: JSON.stringify({ paciente_id: this.modalCita.paciente_id, fecha: this.modalCita.fecha, hora_inicio: this.modalCita.hora_inicio, hora_fin: this.modalCita.hora_fin, tipo_sesion: this.modalCita.tipo_sesion || null, notas: this.modalCita.notas || null, estado: 'confirmada', manual: this.slotsCitaModal.length === 0 })
                             });
                             const data = await res.json();
                             if (data.success) { this.modalCita.show = false; await this.loadCitas(); }

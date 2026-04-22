@@ -289,8 +289,9 @@ router.get('/api/citas/:id', async (req, res) => {
 router.post('/api/citas', async (req, res) => {
   try {
     const negocioId = req.negocioId || 1;
-    const { fecha, hora_inicio } = req.body;
-    if (fecha && hora_inicio) {
+    const { fecha, hora_inicio, manual } = req.body;
+    const isManual = !!manual;
+    if (!isManual && fecha && hora_inicio) {
       const duracion = await negocioService.getDuracionCitaDefault(negocioId);
       const slots = await citasService.getSlotsDisponibles(negocioId, fecha, duracion);
       const slotValido = slots.some(s => s.hora_inicio === String(hora_inicio).trim().slice(0, 5));
@@ -298,7 +299,9 @@ router.post('/api/citas', async (req, res) => {
         return res.status(400).json({ error: 'Este horario no está disponible. Elige otro hueco de la lista.' });
       }
     }
-    const { id } = await citasService.create(negocioId, req.body);
+    const { id } = isManual
+      ? await citasService.createUnsafe(negocioId, req.body)
+      : await citasService.create(negocioId, req.body);
     googleCalendar.syncNewCita(negocioId, id).catch((e) => console.error('[Google Calendar] syncNewCita:', e.message));
     res.status(201).json({ success: true, id });
   } catch (error) {
