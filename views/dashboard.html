@@ -726,6 +726,21 @@
                             <template x-if="googleCalendarConnected">
                                 <div>
                                     <p class="text-green-700 font-medium mb-2">Conectado. Las reservas se crearán en tu Google Calendar.</p>
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Calendario</label>
+                                        <div class="flex flex-wrap gap-2 items-center">
+                                            <select x-model="googleCalendarCalendarId" class="input-modern min-w-[260px]">
+                                                <template x-for="c in googleCalendarCalendars" :key="c.id">
+                                                    <option :value="c.id" x-text="(c.primary ? '⭐ ' : '') + (c.summary || c.id)"></option>
+                                                </template>
+                                            </select>
+                                            <button type="button" @click="saveGoogleCalendarCalendarId()" :disabled="googleCalendarCalendarsLoading" class="btn-secondary">
+                                                <span x-show="!googleCalendarCalendarsLoading">Guardar calendario</span>
+                                                <span x-show="googleCalendarCalendarsLoading">Guardando...</span>
+                                            </button>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-2">Recomendado: crea un calendario nuevo para pruebas (por ejemplo “Entrenos - Test”) y selecciónalo aquí.</p>
+                                    </div>
                                     <label class="flex items-center gap-2 mb-3 cursor-pointer">
                                         <input type="checkbox" x-model="googleCalendarSyncBusy" @change="saveGoogleCalendarSyncBusy()">
                                         <span class="text-sm">Usar también mi Google Calendar para no ofrecer huecos ocupados (si tienes otros eventos, no se mostrarán como disponibles en la web)</span>
@@ -992,6 +1007,9 @@
                 googleCalendarSyncBusy: false,
                 googleCalendarMessage: '',
                 googleCalendarLoading: false,
+                googleCalendarCalendars: [],
+                googleCalendarCalendarId: 'primary',
+                googleCalendarCalendarsLoading: false,
                 slotsCitaModal: [],
                 savingModalCita: false,
                 modalCitaMessage: '',
@@ -1456,8 +1474,28 @@
                         const data = await res.json();
                         this.googleCalendarConnected = !!data.connected;
                         this.googleCalendarSyncBusy = !!data.syncBusy;
+                        this.googleCalendarCalendarId = data.calendarId || 'primary';
+                        if (this.googleCalendarConnected) {
+                            await this.loadGoogleCalendarCalendars();
+                        } else {
+                            this.googleCalendarCalendars = [];
+                        }
                     } catch (e) {
                         this.googleCalendarConnected = false;
+                    }
+                },
+                async loadGoogleCalendarCalendars() {
+                    try {
+                        const res = await fetch('/dashboard/api/google-calendar/calendars');
+                        const data = await res.json();
+                        const items = Array.isArray(data.calendars) ? data.calendars : [];
+                        // asegurar que el seleccionado exista (si no, meter primary)
+                        this.googleCalendarCalendars = items.length > 0 ? items : [{ id: 'primary', summary: 'Primary', primary: true }];
+                        const exists = this.googleCalendarCalendars.some((c) => c.id === this.googleCalendarCalendarId);
+                        if (!exists) this.googleCalendarCalendarId = 'primary';
+                    } catch (e) {
+                        this.googleCalendarCalendars = [{ id: 'primary', summary: 'Primary', primary: true }];
+                        this.googleCalendarCalendarId = this.googleCalendarCalendarId || 'primary';
                     }
                 },
                 async connectGoogleCalendar() {
@@ -1475,6 +1513,26 @@
                         this.googleCalendarMessage = 'Error de conexión';
                     } finally {
                         this.googleCalendarLoading = false;
+                    }
+                },
+                async saveGoogleCalendarCalendarId() {
+                    this.googleCalendarCalendarsLoading = true;
+                    try {
+                        const res = await fetch('/dashboard/api/google-calendar/calendar-id', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ calendarId: this.googleCalendarCalendarId })
+                        });
+                        const data = await res.json();
+                        if (data && data.success) {
+                            this.googleCalendarMessage = 'Calendario guardado correctamente.';
+                        } else {
+                            this.googleCalendarMessage = data.error || 'No se pudo guardar el calendario.';
+                        }
+                    } catch (e) {
+                        this.googleCalendarMessage = 'Error al guardar el calendario.';
+                    } finally {
+                        this.googleCalendarCalendarsLoading = false;
                     }
                 },
                 async disconnectGoogleCalendar() {

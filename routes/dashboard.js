@@ -868,9 +868,36 @@ router.get('/api/google-calendar/status', async (req, res) => {
     const negocioId = req.negocioId || 1;
     const connected = await googleCalendar.isConnected(negocioId);
     const syncBusy = await googleCalendar.isSyncBusyEnabled(negocioId);
-    res.json({ connected, syncBusy });
+    const { getQuery } = require('../utils/db');
+    const row = await getQuery('SELECT google_calendar_calendar_id FROM negocio WHERE id = ?', [negocioId]).catch(() => null);
+    res.json({ connected, syncBusy, calendarId: (row && row.google_calendar_calendar_id) ? row.google_calendar_calendar_id : 'primary' });
   } catch (e) {
     res.status(500).json({ error: e.message });
+  }
+});
+
+router.get('/api/google-calendar/calendars', async (req, res) => {
+  try {
+    const negocioId = req.negocioId || 1;
+    const connected = await googleCalendar.isConnected(negocioId);
+    if (!connected) return res.status(400).json({ error: 'Conecta Google Calendar primero.' });
+    const items = await googleCalendar.listCalendars(negocioId);
+    res.json({ calendars: items });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.post('/api/google-calendar/calendar-id', async (req, res) => {
+  try {
+    const negocioId = req.negocioId || 1;
+    const connected = await googleCalendar.isConnected(negocioId);
+    if (!connected) return res.status(400).json({ error: 'Conecta Google Calendar primero.' });
+    const calendarId = req.body && req.body.calendarId;
+    await googleCalendar.setCalendarId(negocioId, calendarId);
+    res.json({ success: true, calendarId: String(calendarId || '').trim() });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
   }
 });
 
