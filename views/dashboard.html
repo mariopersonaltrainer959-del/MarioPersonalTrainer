@@ -1773,20 +1773,19 @@
                     }
                 },
                 getBlockedInCell(dateStr, hour) {
-                    // Mostrar bloqueos que SOLAPAN esa hora (no solo los que empiezan en punto).
-                    // Si el evento de Google empieza 10:30, debe verse en la celda de 10:00.
+                    // Mostrar bloqueos SOLO en la fila de su hora de inicio.
+                    // Esto evita "duplicados visuales" en eventos largos (p. ej. 12:30–13:30).
                     const cellStart = new Date(`${dateStr}T${String(hour).padStart(2, '0')}:00:00`);
-                    const cellEnd = new Date(cellStart.getTime() + 60 * 60 * 1000);
                     return (this.blockedSlots || []).filter((b) => {
                         if (!b || !b.start_time) return false;
                         const start = new Date(b.start_time);
-                        const end = b.end_time ? new Date(b.end_time) : null;
                         if (Number.isNaN(start.getTime())) return false;
                         const startDate = start.toISOString().slice(0, 10);
                         if (startDate !== dateStr) return false;
-                        const endMs = end && !Number.isNaN(end.getTime()) ? end.getTime() : (start.getTime() + 30 * 60 * 1000);
-                        // Solape: start < cellEnd && end > cellStart
-                        return start.getTime() < cellEnd.getTime() && endMs > cellStart.getTime();
+
+                        // Match por "hora de inicio" (truncada a la hora)
+                        const startHour = start.getHours();
+                        return startHour === cellStart.getHours();
                     });
                 },
 
