@@ -864,15 +864,18 @@ router.get('/api/google-calendar/callback', async (req, res) => {
 });
 
 router.get('/api/google-calendar/status', async (req, res) => {
+  const negocioId = req.negocioId || 1;
+  // Esta ruta se usa para pintar la UI; mejor devolver estado "seguro" y un error informativo,
+  // en vez de 500, para no bloquear el panel si la BD aún está migrando.
   try {
-    const negocioId = req.negocioId || 1;
     const connected = await googleCalendar.isConnected(negocioId);
     const syncBusy = await googleCalendar.isSyncBusyEnabled(negocioId);
     const { getQuery } = require('../utils/db');
     const row = await getQuery('SELECT google_calendar_calendar_id FROM negocio WHERE id = ?', [negocioId]).catch(() => null);
-    res.json({ connected, syncBusy, calendarId: (row && row.google_calendar_calendar_id) ? row.google_calendar_calendar_id : 'primary' });
+    return res.json({ connected, syncBusy, calendarId: (row && row.google_calendar_calendar_id) ? row.google_calendar_calendar_id : 'primary' });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    console.error('[Google Calendar] status:', e.message);
+    return res.json({ connected: false, syncBusy: false, calendarId: 'primary', error: e.message });
   }
 });
 
