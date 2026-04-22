@@ -262,15 +262,15 @@ async function sendNotificationToPsychologist(appointment) {
               <h1>Nueva reserva</h1>
             </div>
             <div class="content">
-              <p>Se ha registrado una nueva cita en <strong>${businessName}</strong>.</p>
+              <p>Se ha registrado un nuevo entreno en <strong>${businessName}</strong>.</p>
               <div class="info-box">
-                <p><strong>Paciente:</strong> ${appointment.client_name}</p>
+                <p><strong>Cliente:</strong> ${appointment.client_name}</p>
                 <p><strong>Email:</strong> <a href="mailto:${appointment.client_email}">${appointment.client_email}</a></p>
                 <p><strong>Fecha:</strong> ${formattedDate}</p>
                 <p><strong>Hora:</strong> ${formattedTime}</p>
                 <p><strong>Duración:</strong> ${appointment.duration} minutos</p>
               </div>
-              <p>Revisa tu panel de citas para más detalles.</p>
+              <p>Revisa tu panel de entrenos para más detalles.</p>
             </div>
           </div>
         </body>
@@ -297,7 +297,7 @@ async function sendTestEmail(toEmail) {
       <p>Este es un email de prueba.</p>
       <p>Si lo recibes, el envío está configurado correctamente (Resend o SMTP).</p>
       <ul>
-        <li>Confirmaciones de reserva a los pacientes</li>
+        <li>Confirmaciones de reserva a los clientes</li>
         <li>Notificaciones de nueva reserva al psicólogo</li>
       </ul>
       <p>Enviado desde el sistema de reservas.</p>

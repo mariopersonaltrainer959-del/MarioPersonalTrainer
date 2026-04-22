@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#2563eb">
-    <title>Dashboard - Gestión de Citas</title>
+    <title>Dashboard - Gestión de Entrenos</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -126,8 +126,8 @@
             <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
                 <nav class="nav-tabs-wrap flex gap-1 py-2">
                     <button @click="activeTab = 'inicio'; loadStats()" class="nav-tab" :class="activeTab === 'inicio' && 'nav-tab-active'">Inicio</button>
-                    <button @click="activeTab = 'appointments'" class="nav-tab" :class="activeTab === 'appointments' && 'nav-tab-active'">Citas</button>
-                    <button @click="activeTab = 'pacientes'; loadPacientes()" class="nav-tab" :class="activeTab === 'pacientes' && 'nav-tab-active'">Pacientes</button>
+                    <button @click="activeTab = 'appointments'" class="nav-tab" :class="activeTab === 'appointments' && 'nav-tab-active'">Entrenos</button>
+                    <button @click="activeTab = 'pacientes'; loadPacientes()" class="nav-tab" :class="activeTab === 'pacientes' && 'nav-tab-active'">Clientes</button>
                     <button @click="activeTab = 'landing'; loadLanding()" class="nav-tab" :class="activeTab === 'landing' && 'nav-tab-active'">Landing</button>
                     <button @click="activeTab = 'facturas'; loadFacturas()" class="nav-tab" :class="activeTab === 'facturas' && 'nav-tab-active'">Facturas</button>
                     <button @click="activeTab = 'reputacion'; loadReputacion()" class="nav-tab" :class="activeTab === 'reputacion' && 'nav-tab-active'">Reputación</button>
@@ -177,7 +177,7 @@
                         <div class="card-body flex items-start gap-4">
                             <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-emerald-600 bg-emerald-50" aria-hidden="true">👥</div>
                             <div class="min-w-0">
-                                <h3 class="text-sm font-medium text-gray-500">Pacientes activos (mes)</h3>
+                                <h3 class="text-sm font-medium text-gray-500">Clientes activos (mes)</h3>
                                 <p class="text-2xl font-bold text-gray-900 mt-0.5" x-text="stats.pacientesActivos ?? '—'"></p>
                             </div>
                         </div>
@@ -190,9 +190,9 @@
             <div x-show="activeTab === 'appointments'">
                 <div class="card bg-white p-4 sm:p-6">
                     <div class="flex flex-col sm:flex-row sm:flex-wrap sm:justify-between sm:items-center gap-3 mb-5 sm:mb-6">
-                        <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Citas</h2>
+                        <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Entrenos</h2>
                         <div class="flex flex-wrap items-center gap-2">
-                            <button @click="openModalCita()" class="btn-primary text-sm sm:text-base">+ Crear cita</button>
+                            <button @click="openModalCita()" class="btn-primary text-sm sm:text-base">+ Crear entreno</button>
                             <button @click="appointmentViewMode = appointmentViewMode === 'calendar' ? 'list' : 'calendar'" class="btn-secondary text-sm" x-text="appointmentViewMode === 'calendar' ? 'Vista lista' : 'Vista calendario'"></button>
                             <button @click="loadCitas()" class="btn-ghost min-h-[44px] text-sm">Actualizar</button>
                         </div>
@@ -268,7 +268,7 @@
                                     </div>
                                 </div>
                             </template>
-                            <p x-show="citas.length === 0" class="text-gray-500 text-center py-8">No hay citas en este rango de fechas</p>
+                            <p x-show="citas.length === 0" class="text-gray-500 text-center py-8">No hay entrenos en este rango de fechas</p>
                         </div>
                     </div>
                 </div>
@@ -334,15 +334,15 @@
                 </div>
             </div>
 
-            <!-- Tab: Pacientes -->
+            <!-- Tab: Clientes -->
             <div x-show="activeTab === 'pacientes'">
                 <div class="card bg-white p-6">
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-900">Pacientes</h2>
-                        <button @click="showPacienteForm = !showPacienteForm" class="btn-primary">+ Nuevo paciente</button>
+                        <h2 class="text-2xl font-bold text-gray-900">Clientes</h2>
+                        <button @click="showPacienteForm = !showPacienteForm" class="btn-primary">+ Nuevo cliente</button>
                     </div>
                     <div class="mb-5 space-y-3">
-                        <label class="block text-sm font-medium text-gray-700">Buscar paciente</label>
+                        <label class="block text-sm font-medium text-gray-700">Buscar cliente</label>
                         <div class="flex flex-wrap gap-3 items-center">
                             <input type="text" x-model="pacienteBusqueda" @input.debounce.200ms="loadPacientes()" class="input-modern min-w-0 flex-1 sm:min-w-[280px] py-2.5 text-base" placeholder="Nombre, email o teléfono del cliente...">
                             <div class="flex items-center gap-2 shrink-0">
@@ -358,14 +358,14 @@
                         </div>
                     </div>
                     <div x-show="showPacienteForm" class="mb-6 card bg-gray-50/80 p-4 border border-gray-100">
-                        <h3 class="font-semibold mb-4">Nuevo paciente</h3>
+                        <h3 class="font-semibold mb-4">Nuevo cliente</h3>
                         <form @submit.prevent="createPaciente()" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label><input type="text" x-model="pacienteForm.nombre" class="input-modern" required></div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Email *</label><input type="email" x-model="pacienteForm.email" class="input-modern" required></div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label><input type="tel" x-model="pacienteForm.telefono" class="input-modern"></div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Estado</label><select x-model="pacienteForm.estado" class="input-modern"><option value="activo">Activo</option><option value="en_proceso">En proceso</option><option value="alta_terapeutica">Alta terapéutica</option><option value="inactivo">Inactivo</option></select></div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Precio sesión (€)</label><input type="number" step="0.01" x-model="pacienteForm.precio_sesion" class="input-modern"></div>
-                            <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">Observaciones sobre el paciente</label><textarea x-model="pacienteForm.notas_privadas" class="input-modern" rows="3" placeholder="Notas privadas, evolución, recordatorios... Solo visibles para ti."></textarea></div>
+                            <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">Observaciones sobre el cliente</label><textarea x-model="pacienteForm.notas_privadas" class="input-modern" rows="3" placeholder="Notas privadas, evolución, recordatorios... Solo visibles para ti."></textarea></div>
                             <div class="md:col-span-2 flex gap-2">
                                 <button type="submit" :disabled="creatingPaciente" class="btn-primary">Crear</button>
                                 <button type="button" @click="showPacienteForm = false" class="btn-secondary">Cancelar</button>
@@ -393,10 +393,10 @@
                                 </template>
                             </tbody>
                         </table>
-                        <p x-show="pacientes.length === 0 && !loadingPacientes" class="text-gray-500 text-center py-6">No hay pacientes. Añade uno o impórtalos desde las reservas.</p>
+                        <p x-show="pacientes.length === 0 && !loadingPacientes" class="text-gray-500 text-center py-6">No hay clientes. Añade uno o impórtalos desde las reservas.</p>
                     </div>
                 </div>
-                <!-- Modal ficha paciente -->
+                <!-- Modal ficha cliente -->
                 <div x-show="fichaPaciente.show" x-cloak class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4" @keydown.escape.window="fichaPaciente.show = false">
                     <div class="modal-mobile bg-white rounded-t-xl sm:rounded-lg shadow-xl max-w-2xl w-full mx-0 sm:mx-4 max-h-[90vh] overflow-y-auto p-4 sm:p-6">
                         <div class="flex justify-between items-start mb-4">
@@ -411,9 +411,9 @@
                                 <p x-show="fichaPaciente.paciente.notas_privadas" class="mt-2"><strong>Observaciones:</strong><br><span class="text-gray-700 whitespace-pre-line" x-text="fichaPaciente.paciente.notas_privadas"></span></p>
                                 <p><strong>Total sesiones:</strong> <span x-text="fichaPaciente.totalSesiones"></span></p>
                                 <p><strong>Facturación estimada:</strong> <span x-text="fichaPaciente.facturacionEstimada + ' €'"></span></p>
-                                <p x-show="fichaPaciente.proximaCita"><strong>Próxima cita:</strong> <span x-text="fichaPaciente.proximaCita.fecha + ' ' + fichaPaciente.proximaCita.hora_inicio"></span></p>
+                                <p x-show="fichaPaciente.proximaCita"><strong>Próximo entreno:</strong> <span x-text="fichaPaciente.proximaCita.fecha + ' ' + fichaPaciente.proximaCita.hora_inicio"></span></p>
                                 <div>
-                                    <h4 class="font-semibold mt-2">Histórico de citas</h4>
+                                    <h4 class="font-semibold mt-2">Histórico de entrenos</h4>
                                     <ul class="list-disc pl-5 mt-1">
                                         <template x-for="c in (fichaPaciente.citas || [])" :key="c.id">
                                             <li x-text="c.fecha + ' ' + c.hora_inicio + ' - ' + c.estado"></li>
@@ -429,18 +429,18 @@
                     </div>
                 </div>
 
-                <!-- Modal editar paciente -->
+                <!-- Modal editar cliente -->
                 <div x-show="editPacienteModal.show" x-cloak class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4" @keydown.escape.window="editPacienteModal.show = false">
                     <div class="modal-mobile bg-white rounded-t-xl sm:rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6">
-                        <h3 class="text-xl font-bold mb-4">Editar paciente</h3>
-                        <p class="text-sm text-gray-500 mb-4">Corrige los datos si hubo un error al crear la reserva o el paciente.</p>
+                        <h3 class="text-xl font-bold mb-4">Editar cliente</h3>
+                        <p class="text-sm text-gray-500 mb-4">Corrige los datos si hubo un error al crear la reserva o el cliente.</p>
                         <form @submit.prevent="saveEditPaciente()" class="space-y-4">
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label><input type="text" x-model="editPacienteForm.nombre" class="input-modern" required></div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Email *</label><input type="email" x-model="editPacienteForm.email" class="input-modern" required></div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label><input type="tel" x-model="editPacienteForm.telefono" class="input-modern"></div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Estado</label><select x-model="editPacienteForm.estado" class="input-modern"><option value="activo">Activo</option><option value="en_proceso">En proceso</option><option value="alta_terapeutica">Alta terapéutica</option><option value="inactivo">Inactivo</option></select></div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Precio sesión (€)</label><input type="number" step="0.01" x-model="editPacienteForm.precio_sesion" class="input-modern"></div>
-                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Observaciones sobre el paciente</label><textarea x-model="editPacienteForm.notas_privadas" class="input-modern" rows="4" placeholder="Notas privadas, evolución, recordatorios... Solo visibles para ti."></textarea><p class="text-xs text-gray-500 mt-1">Todo lo que necesites anotar sobre este paciente. Se guarda en la base de datos.</p></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Observaciones sobre el cliente</label><textarea x-model="editPacienteForm.notas_privadas" class="input-modern" rows="4" placeholder="Notas privadas, evolución, recordatorios... Solo visibles para ti."></textarea><p class="text-xs text-gray-500 mt-1">Todo lo que necesites anotar sobre este cliente. Se guarda en la base de datos.</p></div>
                             <div class="flex gap-2 pt-2">
                                 <button type="button" @click="editPacienteModal.show = false" class="btn-secondary">Cancelar</button>
                                 <button type="submit" :disabled="savingEditPaciente" class="btn-primary"><span x-show="!savingEditPaciente">Guardar cambios</span><span x-show="savingEditPaciente">Guardando...</span></button>
@@ -602,7 +602,7 @@
             <div x-show="activeTab === 'reputacion'" class="fade-in">
                 <div class="card bg-white p-6">
                     <h2 class="text-2xl font-bold text-gray-900 mb-2">Reputación en Google</h2>
-                    <p class="text-gray-600 mb-6">Tu perfil de Google es una de las principales fuentes de nuevos pacientes. Activa este sistema y comienza a fortalecer tu posicionamiento de forma automática después de cada sesión.</p>
+                    <p class="text-gray-600 mb-6">Tu perfil de Google es una de las principales fuentes de nuevos clientes. Activa este sistema y comienza a fortalecer tu posicionamiento de forma automática después de cada sesión.</p>
                     <p class="text-sm text-gray-600 mb-6">Cuantas más reseñas positivas y recientes tenga tu perfil, mayor será tu visibilidad en tu ciudad. Este sistema te ayuda a conseguirlas de forma natural, profesional y sin esfuerzo manual.</p>
                     <form @submit.prevent="saveReputacion()" class="space-y-4 mb-8">
                         <div>
@@ -656,7 +656,7 @@
                             <input type="email" x-model="config.businessEmail" class="input-modern" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Duración de citas (minutos)</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Duración de entrenos (minutos)</label>
                             <input type="number" x-model="config.appointmentDuration" min="15" step="5" class="input-modern" required>
                             <p class="text-xs text-gray-500 mt-1">
                                 Ejemplo: 50 minutos para sesiones estándar, 20 minutos para consultas cortas
