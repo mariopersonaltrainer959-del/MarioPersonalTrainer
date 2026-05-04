@@ -8,6 +8,7 @@ const config = require('./config');
 const publicRoutes = require('./routes/public');
 const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');
+const { hostRouting } = require('./middleware/host-routing');
 
 // Inicializar Express
 const app = express();
@@ -31,6 +32,9 @@ app.use(session({
     httpOnly: true
   }
 }));
+
+// Landing solo en dominio público; panel solo en ADMIN_HOST (ver utils/site-hosts.js)
+app.use(hostRouting);
 
 // Servir archivos estáticos
 app.use(express.static('public'));
