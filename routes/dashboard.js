@@ -567,6 +567,7 @@ router.get('/api/config', async (req, res) => {
 // Actualizar configuración del negocio
 router.post('/api/config', async (req, res) => {
   try {
+    const negocioId = req.negocioId || 1;
     const { businessName, businessPhone, businessEmail, appointmentDuration } = req.body;
 
     const updates = [];
@@ -582,6 +583,15 @@ router.post('/api/config', async (req, res) => {
         [key, value, value]
       );
     }
+
+    // Mantener sincronizados los datos "negocio" para evitar inconsistencias
+    // en pantallas/rutas que leen desde esa tabla (p.ej. test de email).
+    await negocioService.update(negocioId, {
+      nombre: businessName,
+      telefono: businessPhone,
+      email: businessEmail,
+      duracion_cita_default: appointmentDuration
+    });
 
     res.json({ success: true, message: 'Configuración actualizada correctamente' });
   } catch (error) {
@@ -808,7 +818,8 @@ router.post('/api/test-email', async (req, res) => {
   try {
     const negocioId = req.negocioId || 1;
     const negocio = await negocioService.getById(negocioId);
-    const to = (negocio?.email || (await getBusinessConfig()).businessEmail || '').trim();
+    const cfg = await getBusinessConfig();
+    const to = ((cfg && cfg.businessEmail) || negocio?.email || '').trim();
     if (!to) {
       return res.status(400).json({ error: 'Guarda el Email del negocio y pulsa «Guardar» antes de enviar la prueba.' });
     }
