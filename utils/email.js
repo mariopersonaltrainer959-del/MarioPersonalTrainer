@@ -55,7 +55,7 @@ async function getBusinessConfig() {
   return configObj;
 }
 
-// Enviar email de confirmación de cita
+// Enviar email de confirmación de entreno
 async function sendConfirmationEmail(appointment) {
   try {
     const businessConfig = await getBusinessConfig();
@@ -82,7 +82,7 @@ async function sendConfirmationEmail(appointment) {
     const mailOptions = {
       from: fromAddress,
       to: appointment.client_email,
-      subject: `Confirmación de cita - ${businessName}`,
+      subject: `Confirmación de entreno - ${businessName}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -103,9 +103,9 @@ async function sendConfirmationEmail(appointment) {
               <h1>${businessName}</h1>
             </div>
             <div class="content">
-              <h2>Confirmación de tu cita</h2>
+              <h2>Confirmación de tu entreno</h2>
               <p>Hola ${appointment.client_name},</p>
-              <p>Tu cita ha sido confirmada correctamente.</p>
+              <p>Tu entreno ha sido confirmado correctamente.</p>
               
               <div class="info-box">
                 <p><strong>Fecha:</strong> ${formattedDate}</p>
@@ -113,7 +113,7 @@ async function sendConfirmationEmail(appointment) {
                 <p><strong>Duración:</strong> ${appointment.duration} minutos</p>
               </div>
               
-              <p>Si necesitas modificar o cancelar tu cita, por favor contáctanos:</p>
+              <p>Si necesitas modificar o cancelar tu entreno, por favor contáctanos:</p>
               <p><strong>Teléfono:</strong> <a href="tel:${businessPhone}">${businessPhone}</a></p>
               <p><strong>Email:</strong> <a href="mailto:${businessEmail}">${businessEmail}</a></p>
               
@@ -160,7 +160,7 @@ async function sendReminderEmail(appointment) {
     const mailOptions = {
       from: config.emailConfig.from,
       to: appointment.client_email,
-      subject: `Recordatorio: Tu cita es mañana - ${businessName}`,
+      subject: `Recordatorio: Tu entreno es mañana - ${businessName}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -181,9 +181,9 @@ async function sendReminderEmail(appointment) {
               <h1>${businessName}</h1>
             </div>
             <div class="content">
-              <h2>Recordatorio de tu cita</h2>
+              <h2>Recordatorio de tu entreno</h2>
               <p>Hola ${appointment.client_name},</p>
-              <p>Te recordamos que tienes una cita programada:</p>
+              <p>Te recordamos que tienes un entreno programado:</p>
               
               <div class="info-box">
                 <p><strong>Fecha:</strong> ${formattedDate}</p>
@@ -191,7 +191,7 @@ async function sendReminderEmail(appointment) {
                 <p><strong>Duración:</strong> ${appointment.duration} minutos</p>
               </div>
               
-              <p>Si necesitas modificar o cancelar tu cita, por favor contáctanos:</p>
+              <p>Si necesitas modificar o cancelar tu entreno, por favor contáctanos:</p>
               <p><strong>Teléfono:</strong> <a href="tel:${businessPhone}">${businessPhone}</a></p>
               <p><strong>Email:</strong> <a href="mailto:${businessEmail}">${businessEmail}</a></p>
               
@@ -215,7 +215,7 @@ async function sendReminderEmail(appointment) {
   }
 }
 
-// Enviar notificación al psicólogo cuando un paciente reserva (mismo SMTP)
+// Enviar notificación al negocio cuando un cliente reserva (mismo SMTP)
 async function sendNotificationToPsychologist(appointment) {
   try {
     const businessConfig = await getBusinessConfig();

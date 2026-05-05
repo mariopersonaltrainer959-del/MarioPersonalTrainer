@@ -198,13 +198,13 @@ router.post('/api/book', async (req, res) => {
     res.json({
       success: true,
       message: emailSent
-        ? 'Cita reservada correctamente. Revisa tu email para la confirmación.'
-        : 'Cita reservada correctamente. Si no recibes el email, revisa spam o contacta al negocio.',
+        ? 'Entreno reservado correctamente. Revisa tu email para la confirmación.'
+        : 'Entreno reservado correctamente. Si no recibes el email, revisa spam o contacta al negocio.',
       emailSent
     });
   } catch (error) {
     console.error('Error creando reserva:', error);
-    res.status(500).json({ error: 'Error al reservar la cita' });
+    res.status(500).json({ error: 'Error al reservar el entreno' });
   }
 });
 

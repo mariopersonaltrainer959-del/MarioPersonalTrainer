@@ -150,7 +150,7 @@
                         <div class="card-body flex items-start gap-4">
                             <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-[var(--primary-color)] bg-[var(--primary-light)]" aria-hidden="true">📅</div>
                             <div class="min-w-0">
-                                <h3 class="text-sm font-medium text-gray-500">Sesiones este mes</h3>
+                                <h3 class="text-sm font-medium text-gray-500">Entrenos este mes</h3>
                                 <p class="text-2xl font-bold text-gray-900 mt-0.5" x-text="stats.sesionesRealizadas ?? '—'"></p>
                             </div>
                         </div>
@@ -279,15 +279,15 @@
                     </div>
                 </div>
 
-                <!-- Modal crear/editar cita -->
+                <!-- Modal crear/editar entreno -->
                 <div x-show="modalCita.show" x-cloak class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4" @keydown.escape.window="modalCita.show = false">
                     <div class="modal-mobile bg-white rounded-t-xl sm:rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6">
-                        <h3 class="text-xl font-bold mb-4" x-text="modalCita.id ? 'Editar cita' : 'Nueva cita'"></h3>
+                        <h3 class="text-xl font-bold mb-4" x-text="modalCita.id ? 'Editar entreno' : 'Nuevo entreno'"></h3>
                         <form @submit.prevent="saveModalCita()" class="space-y-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Paciente *</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Cliente *</label>
                                 <select x-model="modalCita.paciente_id" class="input-modern" required :disabled="!!modalCita.id">
-                                    <option value="">Selecciona paciente</option>
+                                    <option value="">Selecciona cliente</option>
                                     <template x-for="p in listaPacientesParaCita" :key="p.id">
                                         <option :value="p.id" x-text="p.nombre + ' (' + p.email + ')'"></option>
                                     </template>
@@ -311,8 +311,8 @@
                                     </p>
                                 </div>
                             </div>
-                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Tipo sesión</label><select x-model="modalCita.tipo_sesion" class="input-modern"><option value="">—</option><option value="online">Online</option><option value="presencial">Presencial</option></select></div>
-                            <div x-show="modalCita.id"><label class="block text-sm font-medium text-gray-700 mb-1">Estado</label><select x-model="modalCita.estado" class="input-modern"><option value="confirmada">Confirmada</option><option value="pendiente">Pendiente</option><option value="pasada">Pasada</option><option value="no_asistio">No asistió</option><option value="completada">Completada</option><option value="cancelada">Cancelada</option></select><p class="text-xs text-gray-500 mt-1">Si marcas «Completada», se enviará automáticamente una solicitud de reseña al paciente 3 horas después.</p></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Tipo de entreno</label><select x-model="modalCita.tipo_sesion" class="input-modern"><option value="">—</option><option value="online">Online</option><option value="presencial">Presencial</option></select></div>
+                            <div x-show="modalCita.id"><label class="block text-sm font-medium text-gray-700 mb-1">Estado</label><select x-model="modalCita.estado" class="input-modern"><option value="confirmada">Confirmada</option><option value="pendiente">Pendiente</option><option value="pasada">Pasada</option><option value="no_asistio">No asistió</option><option value="completada">Completada</option><option value="cancelada">Cancelada</option></select><p class="text-xs text-gray-500 mt-1">Si marcas «Completada», se enviará automáticamente una solicitud de reseña al cliente 3 horas después.</p></div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Notas</label><textarea x-model="modalCita.notas" rows="2" class="input-modern"></textarea></div>
                             <div class="flex gap-2 justify-end">
                                 <button type="button" @click="modalCita.show = false" class="btn-secondary">Cancelar</button>
@@ -328,8 +328,8 @@
                     <div class="modal-mobile bg-white rounded-t-xl sm:rounded-lg shadow-xl max-w-md w-full mx-0 sm:mx-4 p-5 sm:p-6" @click.stop>
                         <template x-if="!deleteModal.step2">
                             <div>
-                                <h3 class="text-lg font-semibold text-gray-900 mb-2">¿Eliminar esta cita?</h3>
-                                <p class="text-gray-600 mb-4">Esta acción no se puede deshacer. La cita se borrará permanentemente.</p>
+                                <h3 class="text-lg font-semibold text-gray-900 mb-2">¿Eliminar este entreno?</h3>
+                                <p class="text-gray-600 mb-4">Esta acción no se puede deshacer. El entreno se borrará permanentemente.</p>
                                 <div class="flex gap-2 justify-end">
                                     <button @click="deleteModal.show = false" class="btn-secondary">Cancelar</button>
                                     <button @click="deleteModal.step2 = true" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200">Sí, eliminar</button>
@@ -381,7 +381,7 @@
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Email *</label><input type="email" x-model="pacienteForm.email" class="input-modern" required></div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label><input type="tel" x-model="pacienteForm.telefono" class="input-modern"></div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Estado</label><select x-model="pacienteForm.estado" class="input-modern"><option value="activo">Activo</option><option value="en_proceso">En proceso</option><option value="alta_terapeutica">Alta terapéutica</option><option value="inactivo">Inactivo</option></select></div>
-                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Precio sesión (€)</label><input type="number" step="0.01" x-model="pacienteForm.precio_sesion" class="input-modern"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Precio entreno (€)</label><input type="number" step="0.01" x-model="pacienteForm.precio_sesion" class="input-modern"></div>
                             <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">Observaciones sobre el cliente</label><textarea x-model="pacienteForm.notas_privadas" class="input-modern" rows="3" placeholder="Notas privadas, evolución, recordatorios... Solo visibles para ti."></textarea></div>
                             <div class="md:col-span-2 flex gap-2">
                                 <button type="submit" :disabled="creatingPaciente" class="btn-primary">Crear</button>
@@ -426,7 +426,7 @@
                                 <p x-show="fichaPaciente.paciente.telefono"><strong>Teléfono:</strong> <span x-text="fichaPaciente.paciente.telefono"></span></p>
                                 <p><strong>Estado:</strong> <span x-text="fichaPaciente.paciente.estado"></span></p>
                                 <p x-show="fichaPaciente.paciente.notas_privadas" class="mt-2"><strong>Observaciones:</strong><br><span class="text-gray-700 whitespace-pre-line" x-text="fichaPaciente.paciente.notas_privadas"></span></p>
-                                <p><strong>Total sesiones:</strong> <span x-text="fichaPaciente.totalSesiones"></span></p>
+                                <p><strong>Total entrenos:</strong> <span x-text="fichaPaciente.totalSesiones"></span></p>
                                 <p><strong>Facturación estimada:</strong> <span x-text="fichaPaciente.facturacionEstimada + ' €'"></span></p>
                                 <p x-show="fichaPaciente.proximaCita"><strong>Próximo entreno:</strong> <span x-text="fichaPaciente.proximaCita.fecha + ' ' + fichaPaciente.proximaCita.hora_inicio"></span></p>
                                 <div>
@@ -456,7 +456,7 @@
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Email *</label><input type="email" x-model="editPacienteForm.email" class="input-modern" required></div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label><input type="tel" x-model="editPacienteForm.telefono" class="input-modern"></div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Estado</label><select x-model="editPacienteForm.estado" class="input-modern"><option value="activo">Activo</option><option value="en_proceso">En proceso</option><option value="alta_terapeutica">Alta terapéutica</option><option value="inactivo">Inactivo</option></select></div>
-                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Precio sesión (€)</label><input type="number" step="0.01" x-model="editPacienteForm.precio_sesion" class="input-modern"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Precio entreno (€)</label><input type="number" step="0.01" x-model="editPacienteForm.precio_sesion" class="input-modern"></div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Observaciones sobre el cliente</label><textarea x-model="editPacienteForm.notas_privadas" class="input-modern" rows="4" placeholder="Notas privadas, evolución, recordatorios... Solo visibles para ti."></textarea><p class="text-xs text-gray-500 mt-1">Todo lo que necesites anotar sobre este cliente. Se guarda en la base de datos.</p></div>
                             <div class="flex gap-2 pt-2">
                                 <button type="button" @click="editPacienteModal.show = false" class="btn-secondary">Cancelar</button>
@@ -632,10 +632,10 @@
                     </form>
                     <div class="border-t pt-6 mb-8">
                         <h3 class="font-semibold text-gray-900 mb-2">Plantilla email reputación (solicitud de reseña)</h3>
-                        <p class="text-sm text-gray-500 mb-2">Variables: <code class="bg-gray-100 px-1">{{nombre_paciente}}</code>, <code class="bg-gray-100 px-1">{{nombre_negocio}}</code>, <code class="bg-gray-100 px-1">{{feedback_url}}</code></p>
+                        <p class="text-sm text-gray-500 mb-2">Variables: <code class="bg-gray-100 px-1">{{nombre_cliente}}</code>, <code class="bg-gray-100 px-1">{{nombre_negocio}}</code>, <code class="bg-gray-100 px-1">{{feedback_url}}</code></p>
                         <form @submit.prevent="savePlantillaReputacion()" class="space-y-4">
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Asunto</label><input type="text" x-model="plantillaReputacion.asunto" class="input-modern" placeholder="Tu opinión puede ayudar a otras personas"></div>
-                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Cuerpo</label><textarea x-model="plantillaReputacion.cuerpo" rows="7" class="input-modern" placeholder="Hola {{nombre_paciente}}, gracias por tu sesión con {{nombre_negocio}}..."></textarea></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Cuerpo</label><textarea x-model="plantillaReputacion.cuerpo" rows="7" class="input-modern" placeholder="Hola {{nombre_cliente}}, gracias por tu entreno con {{nombre_negocio}}..."></textarea></div>
                             <div class="flex gap-2 items-center">
                                 <button type="submit" :disabled="savingPlantillaReputacion" class="btn-primary">Guardar plantilla</button>
                                 <button type="button" @click="sendTestPlantillaReputacion()" :disabled="testingPlantillaReputacion" class="btn-secondary">Enviar prueba</button>
@@ -805,10 +805,10 @@
 
                     <div class="border-t pt-6 mt-6">
                         <h3 class="font-semibold text-gray-900 mb-2">Plantilla de recordatorio (email automático día anterior)</h3>
-                        <p class="text-sm text-gray-500 mb-2">Variables: <code class="bg-gray-100 px-1">{{nombre_paciente}}</code>, <code class="bg-gray-100 px-1">{{fecha}}</code>, <code class="bg-gray-100 px-1">{{hora}}</code>, <code class="bg-gray-100 px-1">{{nombre_negocio}}</code></p>
+                        <p class="text-sm text-gray-500 mb-2">Variables: <code class="bg-gray-100 px-1">{{nombre_cliente}}</code>, <code class="bg-gray-100 px-1">{{fecha}}</code>, <code class="bg-gray-100 px-1">{{hora}}</code>, <code class="bg-gray-100 px-1">{{nombre_negocio}}</code></p>
                         <form @submit.prevent="savePlantillaRecordatorio()" class="space-y-4">
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Asunto</label><input type="text" x-model="plantillaRecordatorio.asunto" class="input-modern" placeholder="Recordatorio: cita el {{fecha}} a las {{hora}}"></div>
-                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Cuerpo</label><textarea x-model="plantillaRecordatorio.cuerpo" rows="5" class="input-modern" placeholder="Hola {{nombre_paciente}}, Te recordamos tu cita en {{nombre_negocio}} el {{fecha}} a las {{hora}}. Saludos."></textarea></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Cuerpo</label><textarea x-model="plantillaRecordatorio.cuerpo" rows="5" class="input-modern" placeholder="Hola {{nombre_cliente}}, te recordamos tu entreno en {{nombre_negocio}} el {{fecha}} a las {{hora}}. Saludos."></textarea></div>
                             <div class="flex gap-2 items-center">
                                 <button type="submit" :disabled="savingPlantilla" class="btn-primary">Guardar plantilla</button>
                                 <button type="button" @click="sendTestPlantillaRecordatorio()" :disabled="testingPlantillaRecordatorio" class="btn-secondary">Enviar prueba</button>

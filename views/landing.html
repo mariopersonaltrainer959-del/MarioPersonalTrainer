@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#2563eb">
     <meta name="robots" content="index, follow, max-image-preview:large">
-    <meta name="description" content="Entrenador personal en Estepona (Málaga). Sesiones personalizadas y reserva online. Mario Personal Trainer — fuerza, salud y objetivos a tu medida.">
+    <meta name="description" content="Entrenador personal en Estepona (Málaga). Entrenos personalizados y reserva online. Mario Personal Trainer — fuerza, salud y objetivos a tu medida.">
     <meta name="keywords" content="entrenador personal Estepona, personal trainer Estepona, entrenamiento Estepona, fitness Estepona">
     <meta name="author" content="Mario Personal Trainer">
     <meta name="geo.region" content="ES-MA">
@@ -14,12 +14,12 @@
     <meta property="og:type" content="website">
     <meta property="og:locale" content="es_ES">
     <meta property="og:title" content="Mario Personal Trainer Estepona | Entrenamiento personal y reserva online">
-    <meta property="og:description" content="Entrenador personal en Estepona (Málaga). Sesiones personalizadas: pérdida de peso, fuerza, salud y rendimiento. Reserva tu cita online.">
+    <meta property="og:description" content="Entrenador personal en Estepona (Málaga). Entrenos personalizados: pérdida de peso, fuerza, salud y rendimiento. Reserva tu entreno online.">
     <meta property="og:url" content="">
     <meta property="og:site_name" content="Mario Personal Trainer">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Mario Personal Trainer Estepona | Entrenamiento personal">
-    <meta name="twitter:description" content="Entrenador personal en Estepona. Reserva tu sesión online.">
+    <meta name="twitter:description" content="Entrenador personal en Estepona. Reserva tu entreno online.">
     <title>Mario Personal Trainer Estepona | Entrenamiento personal y reserva online</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -69,8 +69,8 @@
                 </template>
                 <div class="text-center">
                     <h1 id="hero-title" class="text-2xl sm:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-1" x-text="landing.hero_title || 'Mario Personal Trainer'"></h1>
-                    <p class="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto whitespace-pre-line px-1" x-text="landing.hero_subtitle || 'Reserva tu sesión en Estepona de forma sencilla.'"></p>
-                    <a href="#reservar" class="btn-reservar w-full sm:w-auto inline-block mt-6 sm:mt-8 scroll-smooth" x-text="landing.cta_text || 'Reservar cita'"></a>
+                    <p class="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto whitespace-pre-line px-1" x-text="landing.hero_subtitle || 'Reserva tu entreno en Estepona de forma sencilla.'"></p>
+                    <a href="#reservar" class="btn-reservar w-full sm:w-auto inline-block mt-6 sm:mt-8 scroll-smooth" x-text="landing.cta_text || 'Reservar entreno'"></a>
                 </div>
             </section>
 
@@ -151,7 +151,7 @@
                 <div class="mt-8 bg-slate-50 rounded-[var(--card-radius)] p-5 text-sm text-gray-600">
                     <p class="font-medium text-gray-800 mb-2">Información</p>
                     <ul class="list-disc list-inside space-y-1">
-                        <li>Recibirás un email de confirmación con los detalles de tu cita.</li>
+                        <li>Recibirás un email de confirmación con los detalles de tu entreno.</li>
                         <li>Para modificar o cancelar, contacta con al menos 24 h de antelación.</li>
                     </ul>
                 </div>
@@ -312,7 +312,7 @@
                 textosLegalesHtml() {
                     const p = (this.textosLegales.politica_privacidad || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
                     const c = (this.textosLegales.consentimiento || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
-                    if (!p && !c) return '<p class="text-gray-500">Al reservar aceptas el tratamiento de tus datos para gestionar la cita.</p>';
+                    if (!p && !c) return '<p class="text-gray-500">Al reservar aceptas el tratamiento de tus datos para gestionar el entreno.</p>';
                     return (p ? '<h4>Política de privacidad</h4><p>' + p + '</p>' : '') + (c ? '<h4 class="mt-4">Consentimiento</h4><p>' + c + '</p>' : '');
                 },
 
@@ -362,7 +362,7 @@
                         if (data.error) {
                             this.error = data.error;
                         } else {
-                            this.success = data.message || 'Cita reservada correctamente. Revisa tu email.';
+                            this.success = data.message || 'Entreno reservado correctamente. Revisa tu email.';
                             this.form = { name: '', email: '', telefono: '', date: '', time: '', acepta_legal: false };
                             this.availableSlots = [];
                         }

@@ -84,8 +84,8 @@ router.get('/api/appointments', async (req, res) => {
     const appointments = await allQuery(query, params);
     res.json({ appointments });
   } catch (error) {
-    console.error('Error obteniendo citas:', error);
-    res.status(500).json({ error: 'Error obteniendo citas' });
+    console.error('Error obteniendo entrenos:', error);
+    res.status(500).json({ error: 'Error obteniendo entrenos' });
   }
 });
 
@@ -94,11 +94,11 @@ router.get('/api/appointments/:id', async (req, res) => {
   try {
     const appointment = await getQuery('SELECT * FROM appointments WHERE id = ?', [req.params.id]);
     if (!appointment) {
-      return res.status(404).json({ error: 'Cita no encontrada' });
+      return res.status(404).json({ error: 'Entreno no encontrado' });
     }
     res.json({ appointment });
   } catch (error) {
-    res.status(500).json({ error: 'Error obteniendo cita' });
+    res.status(500).json({ error: 'Error obteniendo entreno' });
   }
 });
 
@@ -109,9 +109,9 @@ router.post('/api/appointments/:id/cancel', async (req, res) => {
       'UPDATE appointments SET status = ? WHERE id = ?',
       ['cancelled', req.params.id]
     );
-    res.json({ success: true, message: 'Cita cancelada correctamente' });
+    res.json({ success: true, message: 'Entreno cancelado correctamente' });
   } catch (error) {
-    res.status(500).json({ error: 'Error cancelando cita' });
+    res.status(500).json({ error: 'Error cancelando entreno' });
   }
 });
 
@@ -136,7 +136,7 @@ router.post('/api/appointments', async (req, res) => {
 
     const now = new Date();
     if (appointmentDateTime < now) {
-      return res.status(400).json({ error: 'No se pueden crear citas en el pasado' });
+      return res.status(400).json({ error: 'No se pueden crear entrenos en el pasado' });
     }
 
     const isAvailable = await isTimeSlotAvailable(appointmentDateTime.toISOString(), duration);
@@ -152,12 +152,12 @@ router.post('/api/appointments', async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'Cita creada correctamente',
+      message: 'Entreno creado correctamente',
       appointmentId: result.lastID
     });
   } catch (error) {
-    console.error('Error creando cita:', error);
-    res.status(500).json({ error: 'Error creando cita' });
+    console.error('Error creando entreno:', error);
+    res.status(500).json({ error: 'Error creando entreno' });
   }
 });
 
@@ -166,13 +166,13 @@ router.delete('/api/appointments/:id', async (req, res) => {
   try {
     const appointment = await getQuery('SELECT id FROM appointments WHERE id = ?', [req.params.id]);
     if (!appointment) {
-      return res.status(404).json({ error: 'Cita no encontrada' });
+      return res.status(404).json({ error: 'Entreno no encontrado' });
     }
     await runQuery('DELETE FROM appointments WHERE id = ?', [req.params.id]);
-    res.json({ success: true, message: 'Cita eliminada correctamente' });
+    res.json({ success: true, message: 'Entreno eliminado correctamente' });
   } catch (error) {
-    console.error('Error eliminando cita:', error);
-    res.status(500).json({ error: 'Error eliminando cita' });
+    console.error('Error eliminando entreno:', error);
+    res.status(500).json({ error: 'Error eliminando entreno' });
   }
 });
 
@@ -183,8 +183,8 @@ router.get('/api/pacientes', async (req, res) => {
     const lista = await pacientesService.list(negocioId, { estado: req.query.estado, busqueda: req.query.busqueda });
     res.json({ pacientes: lista });
   } catch (error) {
-    console.error('Error listando pacientes:', error);
-    res.status(500).json({ error: 'Error obteniendo pacientes' });
+    console.error('Error listando clientes:', error);
+    res.status(500).json({ error: 'Error obteniendo clientes' });
   }
 });
 
@@ -192,7 +192,7 @@ router.get('/api/pacientes/:id', async (req, res) => {
   try {
     const negocioId = req.negocioId || 1;
     const p = await pacientesService.getById(negocioId, req.params.id);
-    if (!p) return res.status(404).json({ error: 'Paciente no encontrado' });
+    if (!p) return res.status(404).json({ error: 'Cliente no encontrado' });
     const [citas, proximaCita, totalSesiones, facturacion] = await Promise.all([
       pacientesService.getCitas(negocioId, req.params.id),
       pacientesService.getProximaCita(negocioId, req.params.id),
@@ -207,8 +207,8 @@ router.get('/api/pacientes/:id', async (req, res) => {
       facturacionEstimada: facturacion
     });
   } catch (error) {
-    console.error('Error obteniendo paciente:', error);
-    res.status(500).json({ error: 'Error obteniendo paciente' });
+    console.error('Error obteniendo cliente:', error);
+    res.status(500).json({ error: 'Error obteniendo cliente' });
   }
 });
 
@@ -218,7 +218,7 @@ router.post('/api/pacientes', async (req, res) => {
     const { id } = await pacientesService.create(negocioId, req.body);
     res.status(201).json({ success: true, id });
   } catch (error) {
-    res.status(400).json({ error: error.message || 'Error creando paciente' });
+    res.status(400).json({ error: error.message || 'Error creando cliente' });
   }
 });
 
@@ -228,7 +228,7 @@ router.put('/api/pacientes/:id', async (req, res) => {
     await pacientesService.update(negocioId, req.params.id, req.body);
     res.json({ success: true });
   } catch (error) {
-    res.status(400).json({ error: error.message || 'Error actualizando paciente' });
+    res.status(400).json({ error: error.message || 'Error actualizando cliente' });
   }
 });
 
@@ -236,13 +236,13 @@ router.delete('/api/pacientes/:id', async (req, res) => {
   try {
     const negocioId = req.negocioId || 1;
     const ok = await pacientesService.remove(negocioId, req.params.id);
-    if (!ok) return res.status(404).json({ error: 'Paciente no encontrado' });
+    if (!ok) return res.status(404).json({ error: 'Cliente no encontrado' });
     res.json({ success: true });
   } catch (error) {
-    const msg = error.message || 'Error eliminando paciente';
+    const msg = error.message || 'Error eliminando cliente';
     if (msg.includes('tiene citas')) return res.status(400).json({ error: msg });
-    console.error('Error eliminando paciente:', error);
-    res.status(500).json({ error: 'Error eliminando paciente' });
+    console.error('Error eliminando cliente:', error);
+    res.status(500).json({ error: 'Error eliminando cliente' });
   }
 });
 
@@ -257,8 +257,8 @@ router.get('/api/citas', async (req, res) => {
     });
     res.json({ citas });
   } catch (error) {
-    console.error('Error listando citas:', error);
-    res.status(500).json({ error: 'Error obteniendo citas' });
+    console.error('Error listando entrenos:', error);
+    res.status(500).json({ error: 'Error obteniendo entrenos' });
   }
 });
 
@@ -279,10 +279,10 @@ router.get('/api/citas/:id', async (req, res) => {
   try {
     const negocioId = req.negocioId || 1;
     const cita = await citasService.getById(negocioId, req.params.id);
-    if (!cita) return res.status(404).json({ error: 'Cita no encontrada' });
+    if (!cita) return res.status(404).json({ error: 'Entreno no encontrado' });
     res.json({ cita });
   } catch (error) {
-    res.status(500).json({ error: 'Error obteniendo cita' });
+    res.status(500).json({ error: 'Error obteniendo entreno' });
   }
 });
 
@@ -305,7 +305,7 @@ router.post('/api/citas', async (req, res) => {
     googleCalendar.syncNewCita(negocioId, id).catch((e) => console.error('[Google Calendar] syncNewCita:', e.message));
     res.status(201).json({ success: true, id });
   } catch (error) {
-    res.status(400).json({ error: error.message || 'Error creando cita' });
+    res.status(400).json({ error: error.message || 'Error creando entreno' });
   }
 });
 
@@ -333,7 +333,7 @@ router.put('/api/citas/:id', async (req, res) => {
     }
     res.json({ success: true });
   } catch (error) {
-    res.status(400).json({ error: error.message || 'Error actualizando cita' });
+    res.status(400).json({ error: error.message || 'Error actualizando entreno' });
   }
 });
 
@@ -342,13 +342,13 @@ router.post('/api/citas/:id/cancel', async (req, res) => {
     const negocioId = req.negocioId || 1;
     const cita = await citasService.getById(negocioId, req.params.id);
     const ok = await citasService.cancel(negocioId, req.params.id);
-    if (!ok) return res.status(404).json({ error: 'Cita no encontrada' });
+    if (!ok) return res.status(404).json({ error: 'Entreno no encontrado' });
     if (cita && cita.google_calendar_event_id) {
       googleCalendar.deleteEvent(negocioId, cita.google_calendar_event_id).catch((e) => console.error('[Google Calendar] deleteEvent:', e.message));
     }
     res.json({ success: true });
   } catch (error) {
-    res.status(500).json({ error: 'Error cancelando cita' });
+    res.status(500).json({ error: 'Error cancelando entreno' });
   }
 });
 
@@ -357,13 +357,13 @@ router.delete('/api/citas/:id', async (req, res) => {
     const negocioId = req.negocioId || 1;
     const cita = await citasService.getById(negocioId, req.params.id);
     const ok = await citasService.remove(negocioId, req.params.id);
-    if (!ok) return res.status(404).json({ error: 'Cita no encontrada' });
+    if (!ok) return res.status(404).json({ error: 'Entreno no encontrado' });
     if (cita && cita.google_calendar_event_id) {
       googleCalendar.deleteEvent(negocioId, cita.google_calendar_event_id).catch((e) => console.error('[Google Calendar] deleteEvent:', e.message));
     }
     res.json({ success: true });
   } catch (error) {
-    res.status(500).json({ error: 'Error eliminando cita' });
+    res.status(500).json({ error: 'Error eliminando entreno' });
   }
 });
 
@@ -544,7 +544,7 @@ router.post('/api/landing', async (req, res) => {
       about_title: content.about_title || '',
       about_text: content.about_text || '',
       about_image_url: content.about_image_url || '',
-      cta_text: content.cta_text || 'Reservar cita',
+      cta_text: content.cta_text || 'Reservar entreno',
       sections: Array.isArray(content.sections) ? content.sections : [],
       seo_meta_title: content.seo_meta_title != null ? String(content.seo_meta_title) : '',
       seo_meta_description: content.seo_meta_description != null ? String(content.seo_meta_description) : '',
