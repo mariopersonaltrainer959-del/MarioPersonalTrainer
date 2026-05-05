@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Documento de Entrega - Mario Personal Trainer</title>
+  <style>
+    :root {
+      --text: #111827;
+      --muted: #4b5563;
+      --line: #e5e7eb;
+      --accent: #1d4ed8;
+      --bg: #ffffff;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; line-height: 1.6; }
+    .page { max-width: 900px; margin: 0 auto; padding: 40px 28px 60px; }
+    h1 { margin: 0 0 10px; font-size: 38px; line-height: 1.2; }
+    h2 { margin: 34px 0 12px; font-size: 28px; border-bottom: 2px solid var(--line); padding-bottom: 8px; }
+    h3 { margin: 24px 0 8px; font-size: 22px; }
+    p { margin: 8px 0; }
+    ul { margin: 10px 0 0 22px; }
+    li { margin: 4px 0; }
+    code { background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 6px; padding: 2px 6px; font-size: 0.95em; }
+    .muted { color: var(--muted); }
+    .box { border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 8px; padding: 12px 14px; background: #f8fafc; }
+    .small { font-size: 0.95rem; }
+    @media print {
+      .page { padding: 14mm 10mm; max-width: none; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <h1>Documento de Entrega - Mario Personal Trainer</h1>
+
+    <h2>Resumen del servicio</h2>
+    <p>Se entrega una plataforma web operativa para gestion de entrenamientos personales, con:</p>
+    <ul>
+      <li>Landing publica personalizada de marca.</li>
+      <li>Panel de administracion privado.</li>
+      <li>Sistema de reservas/entrenos y gestion de clientes.</li>
+      <li>Facturacion y recibos en PDF.</li>
+      <li>Integracion con Google Calendar.</li>
+      <li>Envio automatico de emails (confirmaciones, recordatorios y reputacion).</li>
+    </ul>
+
+    <h2>Enlaces de acceso</h2>
+    <ul>
+      <li>Landing publica: <code>https://marioentrenadorpersonal.pro/</code></li>
+      <li>Login admin: <code>https://admin.marioentrenadorpersonal.pro/login</code></li>
+      <li>Dashboard admin: <code>https://admin.marioentrenadorpersonal.pro/dashboard</code></li>
+      <li>Setup inicial (solo uso puntual): <code>https://admin.marioentrenadorpersonal.pro/setup</code></li>
+    </ul>
+
+    <h2>Infraestructura y servicios activos</h2>
+    <ul>
+      <li>Dominio y DNS: Porkbun (<code>marioentrenadorpersonal.pro</code>)</li>
+      <li>Codigo fuente y versionado: GitHub</li>
+      <li>Hosting y despliegue: Railway</li>
+      <li>Correo del dominio: Zoho Mail</li>
+      <li>Envio transaccional de emails: Resend</li>
+      <li>Integracion de calendario: Google Cloud + Google Calendar API</li>
+    </ul>
+
+    <h2>Cuentas y correos del proyecto</h2>
+    <ul>
+      <li>Correo profesional generado del proyecto: <code>info@marioentrenadorpersonal.pro</code></li>
+      <li>Cuenta principal de gestion y facturacion: <code>mariopersonaltrainer959@gmail.com</code></li>
+      <li>Nota operativa: todos los servicios principales del proyecto se han creado y gestionado con la cuenta <code>mariopersonaltrainer959@gmail.com</code>, y las facturas se reciben en ese mismo correo.</li>
+    </ul>
+
+    <h2>Costes y suscripciones del servicio</h2>
+    <ul>
+      <li>Dominio <code>marioentrenadorpersonal.pro</code> (Porkbun): aprox. <strong>3 EUR</strong> - <strong>anual</strong></li>
+      <li>Hosting Railway (plan Hobby): <strong>5 EUR</strong> - <strong>mensual</strong></li>
+      <li>Zoho Mail (plan Lite): aprox. <strong>13 EUR</strong> - <strong>anual</strong></li>
+      <li>Total estimado de pagos iniciales indicados: aprox. <strong>21 EUR</strong> (incluye costes anuales + primer mes de Railway)</li>
+    </ul>
+
+    <h2>Resumen de recurrencia</h2>
+    <ul>
+      <li>Costes mensuales recurrentes:
+        <ul>
+          <li>Railway Hobby: <strong>5 EUR/mes</strong></li>
+        </ul>
+      </li>
+      <li>Costes anuales recurrentes:
+        <ul>
+          <li>Dominio en Porkbun: <strong>anual</strong></li>
+          <li>Zoho Mail Lite: <strong>anual</strong></li>
+        </ul>
+      </li>
+    </ul>
+
+    <h2>Funcionalidades entregadas</h2>
+
+    <h3>Web publica</h3>
+    <ul>
+      <li>Presentacion profesional del servicio.</li>
+      <li>Formulario de reserva.</li>
+      <li>Flujo de experiencia alineado a "entrenos" y "clientes".</li>
+    </ul>
+
+    <h3>Panel admin</h3>
+    <ul>
+      <li>Gestion de clientes y entrenos.</li>
+      <li>Configuracion del negocio.</li>
+      <li>Configuracion de emails y pruebas de envio.</li>
+      <li>Gestion de facturas y recibos.</li>
+      <li>Configuracion de reputacion Google.</li>
+    </ul>
+
+    <h3>Email automatizado</h3>
+    <ul>
+      <li>Confirmacion de reserva al cliente.</li>
+      <li>Recordatorio automatico previo al entreno.</li>
+      <li>Solicitud automatica de valoracion tras entreno completado.</li>
+      <li>Plantillas editables desde panel para recordatorio y reputacion.</li>
+      <li>Botones de envio de prueba para validar contenido antes de usarlo en produccion.</li>
+    </ul>
+
+    <h3>Reputacion Google</h3>
+    <ul>
+      <li>Enlace de valoracion configurable.</li>
+      <li>Flujo de feedback del cliente.</li>
+      <li>Ventana anti-fatiga para no repetir solicitudes en periodos cortos.</li>
+    </ul>
+
+    <h2>Entrega tecnica</h2>
+    <ul>
+      <li>Repositorio principal: <code>mariopersonaltrainer959-del/MarioPersonalTrainer</code></li>
+      <li>Historial de despliegues y CI: <a href="https://github.com/mariopersonaltrainer959-del/MarioPersonalTrainer/actions">GitHub Actions</a></li>
+    </ul>
+
+    <h2>Operativa recomendada</h2>
+    <ul>
+      <li>Revisar semanalmente el panel de clientes y entrenos.</li>
+      <li>Probar email de test tras cambios de plantilla.</li>
+      <li>Verificar periodicamente que el dominio y DNS siguen vigentes.</li>
+      <li>Mantener actualizado el enlace de Google Reviews del negocio.</li>
+    </ul>
+
+    <h2>Nota de seguridad</h2>
+    <p class="box small">Las credenciales de acceso y claves tecnicas se gestionan en un anexo privado independiente de este documento.</p>
+  </main>
+</body>
+</html>
