@@ -436,6 +436,48 @@ router.post('/api/plantillas', async (req, res) => {
   }
 });
 
+router.post('/api/plantillas/recordatorio/test-email', async (req, res) => {
+  try {
+    const negocioId = req.negocioId || 1;
+    const negocio = await negocioService.getById(negocioId);
+    const to = ((await getBusinessConfig()).businessEmail || negocio?.email || '').trim();
+    if (!to) return res.status(400).json({ error: 'Guarda primero el Email del negocio en Configuración.' });
+    const plantilla = await plantillasService.getByName(negocioId, 'recordatorio');
+    if (!plantilla) return res.status(400).json({ error: 'Guarda antes la plantilla de recordatorio.' });
+
+    const render = plantillasService.render(plantilla, {
+      nombre_paciente: 'Cliente de prueba',
+      fecha: new Date().toISOString().slice(0, 10),
+      hora: '10:00',
+      nombre_negocio: negocio?.nombre || 'Tu negocio'
+    });
+    const html = `
+      <div style="margin:0;padding:24px;background:#f3f4f6;font-family:Arial,sans-serif;">
+        <div style="max-width:640px;margin:0 auto;background:#fff;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden;">
+          <div style="background:#1d4ed8;color:#fff;padding:18px 24px;font-size:20px;font-weight:700;">${String(render.asunto || 'Recordatorio')}</div>
+          <div style="padding:24px;line-height:1.65;color:#374151;font-size:15px;">${String(render.cuerpo || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\n\n+/g, '</p><p>')
+            .replace(/\n/g, '<br>')
+            .replace(/^/, '<p>')
+            .replace(/$/, '</p>')}</div>
+          <div style="border-top:1px solid #f3f4f6;color:#6b7280;font-size:12px;padding:16px 24px;">Email de prueba de plantilla de recordatorio.</div>
+        </div>
+      </div>`;
+
+    await require('../lib/email-negocio').sendWithNegocio(negocio || {}, {
+      to,
+      subject: `[PRUEBA] ${render.asunto || 'Recordatorio'}`,
+      html
+    });
+    res.json({ success: true, message: `Prueba de recordatorio enviada a ${to}.` });
+  } catch (error) {
+    res.status(500).json({ error: error.message || 'Error enviando prueba de recordatorio' });
+  }
+});
+
 // Textos legales (RGPD)
 router.get('/api/textos-legales', async (req, res) => {
   try {
@@ -998,6 +1040,41 @@ router.post('/api/reputacion-pro', async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     res.status(400).json({ error: error.message || 'Error guardando configuración' });
+  }
+});
+
+router.get('/api/reputacion-pro/template', async (req, res) => {
+  try {
+    const negocioId = req.negocioId || 1;
+    const plantilla = await reputacionPro.email.getTemplate(negocioId);
+    res.json({ plantilla });
+  } catch (error) {
+    res.status(500).json({ error: 'Error obteniendo plantilla de reputación' });
+  }
+});
+
+router.post('/api/reputacion-pro/template', async (req, res) => {
+  try {
+    const negocioId = req.negocioId || 1;
+    const asunto = req.body && req.body.asunto ? String(req.body.asunto) : '';
+    const cuerpo = req.body && req.body.cuerpo ? String(req.body.cuerpo) : '';
+    const r = await plantillasService.upsert(negocioId, 'reputacion_review', asunto, cuerpo);
+    res.json({ success: true, id: r.id });
+  } catch (error) {
+    res.status(400).json({ error: error.message || 'Error guardando plantilla de reputación' });
+  }
+});
+
+router.post('/api/reputacion-pro/test-email', async (req, res) => {
+  try {
+    const negocioId = req.negocioId || 1;
+    const negocio = await negocioService.getById(negocioId);
+    const to = ((await getBusinessConfig()).businessEmail || negocio?.email || '').trim();
+    if (!to) return res.status(400).json({ error: 'Guarda primero el Email del negocio en Configuración.' });
+    await reputacionPro.email.sendReviewRequestTestEmail(negocio || {}, to);
+    res.json({ success: true, message: `Prueba de reputación enviada a ${to}.` });
+  } catch (error) {
+    res.status(500).json({ error: error.message || 'Error enviando prueba de reputación' });
   }
 });
 

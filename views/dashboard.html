@@ -630,6 +630,19 @@
                         <button type="submit" :disabled="savingReputacion" class="btn-primary">Guardar configuración</button>
                         <span x-show="reputacionMessage" class="ml-2 text-sm" :class="reputacionMessage.includes('correctamente') ? 'text-green-600' : 'text-red-600'" x-text="reputacionMessage"></span>
                     </form>
+                    <div class="border-t pt-6 mb-8">
+                        <h3 class="font-semibold text-gray-900 mb-2">Plantilla email reputación (solicitud de reseña)</h3>
+                        <p class="text-sm text-gray-500 mb-2">Variables: <code class="bg-gray-100 px-1">{{nombre_paciente}}</code>, <code class="bg-gray-100 px-1">{{nombre_negocio}}</code>, <code class="bg-gray-100 px-1">{{feedback_url}}</code></p>
+                        <form @submit.prevent="savePlantillaReputacion()" class="space-y-4">
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Asunto</label><input type="text" x-model="plantillaReputacion.asunto" class="input-modern" placeholder="Tu opinión puede ayudar a otras personas"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Cuerpo</label><textarea x-model="plantillaReputacion.cuerpo" rows="7" class="input-modern" placeholder="Hola {{nombre_paciente}}, gracias por tu sesión con {{nombre_negocio}}..."></textarea></div>
+                            <div class="flex gap-2 items-center">
+                                <button type="submit" :disabled="savingPlantillaReputacion" class="btn-primary">Guardar plantilla</button>
+                                <button type="button" @click="sendTestPlantillaReputacion()" :disabled="testingPlantillaReputacion" class="btn-secondary">Enviar prueba</button>
+                            </div>
+                            <span x-show="plantillaReputacionMessage" class="ml-2 text-sm" :class="plantillaReputacionMessage.includes('correctamente') || plantillaReputacionMessage.includes('enviada') ? 'text-green-600' : 'text-red-600'" x-text="plantillaReputacionMessage"></span>
+                        </form>
+                    </div>
                     <div class="border-t pt-6">
                         <h3 class="font-semibold text-gray-900 mb-4">Resumen este mes</h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -796,7 +809,10 @@
                         <form @submit.prevent="savePlantillaRecordatorio()" class="space-y-4">
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Asunto</label><input type="text" x-model="plantillaRecordatorio.asunto" class="input-modern" placeholder="Recordatorio: cita el {{fecha}} a las {{hora}}"></div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Cuerpo</label><textarea x-model="plantillaRecordatorio.cuerpo" rows="5" class="input-modern" placeholder="Hola {{nombre_paciente}}, Te recordamos tu cita en {{nombre_negocio}} el {{fecha}} a las {{hora}}. Saludos."></textarea></div>
-                            <button type="submit" :disabled="savingPlantilla" class="btn-primary">Guardar plantilla</button>
+                            <div class="flex gap-2 items-center">
+                                <button type="submit" :disabled="savingPlantilla" class="btn-primary">Guardar plantilla</button>
+                                <button type="button" @click="sendTestPlantillaRecordatorio()" :disabled="testingPlantillaRecordatorio" class="btn-secondary">Enviar prueba</button>
+                            </div>
                             <span x-show="plantillaMessage" class="ml-2 text-sm" :class="plantillaMessage.includes('correctamente') ? 'text-green-600' : 'text-red-600'" x-text="plantillaMessage"></span>
                         </form>
                     </div>
@@ -1028,6 +1044,10 @@
                 reputacionStats: {},
                 reputacionMessage: '',
                 savingReputacion: false,
+                plantillaReputacion: { asunto: '', cuerpo: '' },
+                savingPlantillaReputacion: false,
+                testingPlantillaReputacion: false,
+                plantillaReputacionMessage: '',
                 googleCalendarConnected: false,
                 googleCalendarSyncBusy: false,
                 googleCalendarMessage: '',
@@ -1074,6 +1094,7 @@
                 smtpMessage: '',
                 savingPlantilla: false,
                 plantillaMessage: '',
+                testingPlantillaRecordatorio: false,
                 textosLegales: { politica_privacidad: '', consentimiento: '', version: '1' },
                 savingTextosLegales: false,
                 textosLegalesMessage: '',
@@ -1682,6 +1703,19 @@
                         this.savingPlantilla = false;
                     }
                 },
+                async sendTestPlantillaRecordatorio() {
+                    this.testingPlantillaRecordatorio = true;
+                    this.plantillaMessage = '';
+                    try {
+                        const res = await fetch('/dashboard/api/plantillas/recordatorio/test-email', { method: 'POST' });
+                        const data = await res.json();
+                        this.plantillaMessage = data.success ? (data.message || 'Prueba enviada') : (data.error || 'Error');
+                    } catch (e) {
+                        this.plantillaMessage = 'Error de conexión';
+                    } finally {
+                        this.testingPlantillaRecordatorio = false;
+                    }
+                },
 
                 async saveTextosLegales() {
                     this.savingTextosLegales = true;
@@ -1949,14 +1983,22 @@
 
                 async loadReputacion() {
                     try {
-                        const [configRes, statsRes] = await Promise.all([
+                        const [configRes, statsRes, plantillaRes] = await Promise.all([
                             fetch('/dashboard/api/reputacion-pro'),
-                            fetch('/dashboard/api/reputacion-pro/stats')
+                            fetch('/dashboard/api/reputacion-pro/stats'),
+                            fetch('/dashboard/api/reputacion-pro/template')
                         ]);
                         const configData = await configRes.json();
                         const statsData = await statsRes.json();
+                        const plantillaData = await plantillaRes.json().catch(() => ({}));
                         this.reputacion = { googleReviewUrl: configData.googleReviewUrl || '' };
                         this.reputacionStats = statsData;
+                        if (plantillaData && plantillaData.plantilla) {
+                            this.plantillaReputacion = {
+                                asunto: plantillaData.plantilla.asunto || '',
+                                cuerpo: plantillaData.plantilla.cuerpo || ''
+                            };
+                        }
                     } catch (e) {
                         this.reputacionStats = {};
                     }
@@ -1977,6 +2019,36 @@
                         this.reputacionMessage = 'Error de conexión';
                     } finally {
                         this.savingReputacion = false;
+                    }
+                },
+                async savePlantillaReputacion() {
+                    this.savingPlantillaReputacion = true;
+                    this.plantillaReputacionMessage = '';
+                    try {
+                        const res = await fetch('/dashboard/api/reputacion-pro/template', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.plantillaReputacion)
+                        });
+                        const data = await res.json();
+                        this.plantillaReputacionMessage = data.success ? 'Plantilla guardada correctamente' : (data.error || 'Error');
+                    } catch (e) {
+                        this.plantillaReputacionMessage = 'Error de conexión';
+                    } finally {
+                        this.savingPlantillaReputacion = false;
+                    }
+                },
+                async sendTestPlantillaReputacion() {
+                    this.testingPlantillaReputacion = true;
+                    this.plantillaReputacionMessage = '';
+                    try {
+                        const res = await fetch('/dashboard/api/reputacion-pro/test-email', { method: 'POST' });
+                        const data = await res.json();
+                        this.plantillaReputacionMessage = data.success ? (data.message || 'Prueba enviada') : (data.error || 'Error');
+                    } catch (e) {
+                        this.plantillaReputacionMessage = 'Error de conexión';
+                    } finally {
+                        this.testingPlantillaReputacion = false;
                     }
                 },
 
