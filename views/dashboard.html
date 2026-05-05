@@ -813,7 +813,7 @@
                                 <button type="submit" :disabled="savingPlantilla" class="btn-primary">Guardar plantilla</button>
                                 <button type="button" @click="sendTestPlantillaRecordatorio()" :disabled="testingPlantillaRecordatorio" class="btn-secondary">Enviar prueba</button>
                             </div>
-                            <span x-show="plantillaMessage" class="ml-2 text-sm" :class="plantillaMessage.includes('correctamente') ? 'text-green-600' : 'text-red-600'" x-text="plantillaMessage"></span>
+                            <span x-show="plantillaMessage" class="ml-2 text-sm" :class="(plantillaMessage.includes('correctamente') || plantillaMessage.includes('enviada') || plantillaMessage.includes('enviado')) ? 'text-green-600' : 'text-red-600'" x-text="plantillaMessage"></span>
                         </form>
                     </div>
 
