@@ -808,6 +808,17 @@ router.delete('/api/facturas/:id', async (req, res) => {
 });
 
 // Rutinas semanales (ejercicios por día + PDF)
+router.get('/api/rutinas/list', async (req, res) => {
+  try {
+    const negocioId = req.negocioId || 1;
+    const rutinas = await rutinasService.list(negocioId);
+    res.json({ rutinas });
+  } catch (error) {
+    console.error('Error listando rutinas:', error);
+    res.status(500).json({ error: 'Error obteniendo rutinas' });
+  }
+});
+
 router.get('/api/rutinas', async (req, res) => {
   try {
     const negocioId = req.negocioId || 1;
@@ -854,8 +865,8 @@ router.get('/api/rutinas/pdf', async (req, res) => {
     res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
     res.send(buffer);
   } catch (error) {
-    console.error('Error generando PDF rutina:', error);
-    res.status(500).send('Error generando PDF');
+    console.error('Error generando PDF rutina:', error.message || error);
+    res.status(500).send('Error generando PDF: ' + (error.message || 'desconocido'));
   }
 });
 

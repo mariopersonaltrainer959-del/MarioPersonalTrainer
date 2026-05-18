@@ -476,6 +476,12 @@
 
             <!-- Tab: Rutinas semanales -->
             <div x-show="activeTab === 'rutinas'" class="fade-in">
+                <div class="flex gap-2 mb-4">
+                    <button @click="rutinaTab = 'nueva'" class="nav-tab" :class="rutinaTab === 'nueva' && 'nav-tab-active'">Nueva rutina</button>
+                    <button @click="rutinaTab = 'historial'; loadRutinasHistorial()" class="nav-tab" :class="rutinaTab === 'historial' && 'nav-tab-active'">Historial (<span x-text="rutinasHistorial.length"></span>)</button>
+                </div>
+
+                <template x-if="rutinaTab === 'nueva'">
                 <div class="card bg-white p-6">
                     <h2 class="text-2xl font-bold text-gray-900 mb-2">Rutina semanal</h2>
                     <p class="text-sm text-gray-600 mb-6">Escribe los ejercicios de cada día (uno por línea). Guarda y descarga el PDF para enviarlo al cliente.</p>
@@ -484,8 +490,8 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Cliente *</label>
                             <select x-model="rutinaPacienteId" @change="loadRutina()" class="input-modern w-full" required>
                                 <option value="">— Seleccionar cliente —</option>
-                                <template x-for="p in pacientes" :key="'rut-' + p.id">
-                                    <option :value="String(p.id)" x-text="p.nombre"></option>
+                                <template x-for="p in getPacientesParaRutina()" :key="'rut-' + p.id">
+                                    <option :value="String(p.id)" x-text="formatPacienteRutinaLabel(p)"></option>
                                 </template>
                             </select>
                         </div>
@@ -521,6 +527,33 @@
                         <span x-show="rutinaMessage" class="text-sm" :class="rutinaMessage.includes('correctamente') ? 'text-green-600' : 'text-red-600'" x-text="rutinaMessage"></span>
                     </div>
                 </div>
+                </template>
+
+                <template x-if="rutinaTab === 'historial'">
+                    <div class="card bg-white p-6">
+                        <h2 class="text-xl font-bold text-gray-900 mb-4">Rutinas guardadas</h2>
+                        <p x-show="rutinasHistorial.length === 0 && !loadingRutinasHistorial" class="text-gray-500 py-4">No hay rutinas guardadas aún.</p>
+                        <p x-show="loadingRutinasHistorial" class="text-gray-500 py-4">Cargando...</p>
+                        <div x-show="rutinasHistorial.length > 0" class="overflow-x-auto">
+                            <table class="table-modern w-full">
+                                <thead><tr><th>Cliente</th><th>Semana</th><th>Actualizada</th><th class="text-right">Acciones</th></tr></thead>
+                                <tbody>
+                                    <template x-for="r in rutinasHistorial" :key="r.id">
+                                        <tr>
+                                            <td class="font-medium" x-text="r.paciente_nombre"></td>
+                                            <td><span x-text="formatCitaFecha(r.semana_inicio)"></span> – <span x-text="formatCitaFecha(r.semana_fin)"></span></td>
+                                            <td x-text="r.updated_at ? String(r.updated_at).slice(0, 16).replace('T', ' ') : '—'"></td>
+                                            <td class="text-right whitespace-nowrap">
+                                                <button type="button" @click="abrirRutinaHistorial(r)" class="btn-link mr-3">Editar</button>
+                                                <a :href="'/dashboard/api/rutinas/pdf?paciente_id=' + r.paciente_id + '&semana_inicio=' + r.semana_inicio" target="_blank" rel="noopener" class="btn-link">Ver PDF</a>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </template>
             </div>
 
             <!-- Tab: Landing (web pública editable) -->
@@ -1093,6 +1126,9 @@
                 pacienteEstadoFilter: '',
                 creatingPaciente: false,
                 pacienteMessage: '',
+                rutinaTab: 'nueva',
+                rutinasHistorial: [],
+                loadingRutinasHistorial: false,
                 rutinaPacienteId: '',
                 rutinaSemanaInicio: '',
                 rutinaSemanaFin: '',
@@ -1257,9 +1293,52 @@
                     return x.toISOString().slice(0, 10);
                 },
 
+                getPacientesParaRutina() {
+                    const byKey = new Map();
+                    for (const p of this.pacientes || []) {
+                        const email = String(p.email || '').trim().toLowerCase();
+                        const nombre = String(p.nombre || '').trim().toLowerCase();
+                        const key = (email && !email.includes('@calendar.local') && !email.startsWith('google-event-'))
+                            ? email
+                            : nombre;
+                        if (!key) continue;
+                        const prev = byKey.get(key);
+                        if (!prev || Number(p.id) > Number(prev.id)) byKey.set(key, p);
+                    }
+                    return Array.from(byKey.values()).sort((a, b) =>
+                        String(a.nombre || '').localeCompare(String(b.nombre || ''), 'es')
+                    );
+                },
+
+                formatPacienteRutinaLabel(p) {
+                    const tel = p.telefono ? String(p.telefono).trim() : '';
+                    return (p.nombre || 'Sin nombre') + (tel ? ' · ' + tel : '');
+                },
+
+                async loadRutinasHistorial() {
+                    this.loadingRutinasHistorial = true;
+                    try {
+                        const res = await fetch('/dashboard/api/rutinas/list');
+                        const data = await res.json();
+                        this.rutinasHistorial = data.rutinas || [];
+                    } catch (e) {
+                        this.rutinasHistorial = [];
+                    } finally {
+                        this.loadingRutinasHistorial = false;
+                    }
+                },
+
+                abrirRutinaHistorial(r) {
+                    this.rutinaTab = 'nueva';
+                    this.rutinaPacienteId = String(r.paciente_id);
+                    this.rutinaSemanaInicio = String(r.semana_inicio).slice(0, 10);
+                    this.loadRutina();
+                },
+
                 async loadRutinasTab() {
                     if (!this.rutinaSemanaInicio) this.rutinaSemanaInicio = this.getMondayISO();
                     if (!this.pacientes.length) await this.loadPacientes();
+                    await this.loadRutinasHistorial();
                     if (this.rutinaPacienteId) await this.loadRutina();
                 },
 
@@ -1321,6 +1400,7 @@
                         if (data.success) {
                             this.rutinaPlanId = data.id;
                             this.rutinaMessage = 'Rutina guardada correctamente';
+                            await this.loadRutinasHistorial();
                         } else {
                             this.rutinaMessage = data.error || 'Error al guardar';
                         }
