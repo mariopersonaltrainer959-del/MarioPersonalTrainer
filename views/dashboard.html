@@ -193,7 +193,7 @@
                         <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Entrenos</h2>
                         <div class="flex flex-wrap items-center gap-2">
                             <button @click="openModalCita()" class="btn-primary text-sm sm:text-base">+ Crear entreno</button>
-                            <button @click="appointmentViewMode = appointmentViewMode === 'calendar' ? 'list' : 'calendar'" class="btn-secondary text-sm" x-text="appointmentViewMode === 'calendar' ? 'Vista lista' : 'Vista calendario'"></button>
+                            <button type="button" @click="toggleAppointmentView()" class="btn-secondary text-sm" x-text="appointmentViewMode === 'calendar' ? 'Vista lista' : 'Vista calendario'"></button>
                             <button type="button" @click="refreshEntrenos(true)" :disabled="citasRefreshing" class="btn-ghost min-h-[44px] text-sm">
                                 <span x-show="!citasRefreshing">Actualizar</span>
                                 <span x-show="citasRefreshing">Actualizando...</span>
@@ -1350,14 +1350,12 @@
 
                 getCalendarWeekDays() {
                     if (!this.calendarWeekStart) return [];
-                    const m = new Date(this.calendarWeekStart + 'T12:00:00');
+                    const [y, mo, d] = this.calendarWeekStart.split('-').map(Number);
                     const days = [];
                     const dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
                     for (let i = 0; i < 7; i++) {
-                        const d = new Date(m);
-                        d.setDate(m.getDate() + i);
-                        const dateStr = this.formatLocalDateYMD(d);
-                        days.push({ date: dateStr, label: dayNames[i] + ' ' + d.getDate() });
+                        const dt = new Date(y, mo - 1, d + i);
+                        days.push({ date: this.formatLocalDateYMD(dt), label: dayNames[i] + ' ' + dt.getDate() });
                     }
                     return days;
                 },
@@ -1370,18 +1368,40 @@
                     return m.getDate() + ' - ' + sun.getDate() + ' ' + sun.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
                 },
 
+                normalizeCitaFecha(fecha) {
+                    if (fecha == null || fecha === '') return '';
+                    const s = String(fecha);
+                    const iso = s.match(/^(\d{4}-\d{2}-\d{2})/);
+                    if (iso) return iso[1];
+                    const d = new Date(fecha);
+                    if (!Number.isNaN(d.getTime())) return this.formatLocalDateYMD(d);
+                    return '';
+                },
+
                 getCalendarHours() {
-                    const h = [];
-                    for (let i = 8; i <= 20; i++) h.push(i);
-                    return h;
+                    let minH = 7;
+                    let maxH = 21;
+                    for (const c of this.citas || []) {
+                        const hi = parseInt(String(c.hora_inicio || '').split(':')[0], 10);
+                        const hf = parseInt(String(c.hora_fin || c.hora_inicio || '').split(':')[0], 10);
+                        if (!Number.isNaN(hi)) {
+                            minH = Math.min(minH, hi);
+                            maxH = Math.max(maxH, hi);
+                        }
+                        if (!Number.isNaN(hf)) maxH = Math.max(maxH, hf);
+                    }
+                    minH = Math.max(6, minH);
+                    maxH = Math.min(22, Math.max(maxH, 20));
+                    const hours = [];
+                    for (let i = minH; i <= maxH; i++) hours.push(i);
+                    return hours;
                 },
 
                 getCitasInCell(dayStr, hour) {
                     const slotStart = hour * 60;
                     const slotEnd = (hour + 1) * 60;
                     return this.citas.filter(c => {
-                        const fechaStr = c.fecha ? String(c.fecha).slice(0, 10) : '';
-                        if (fechaStr !== dayStr) return false;
+                        if (this.normalizeCitaFecha(c.fecha) !== dayStr) return false;
                         const [sh, sm] = String(c.hora_inicio || '0:0').split(':').map(Number);
                         const [eh, em] = String(c.hora_fin || c.hora_inicio || '0:0').split(':').map(Number);
                         const cStart = sh * 60 + (sm || 0);
@@ -1389,6 +1409,14 @@
                         if (cEnd <= cStart) cEnd = cStart + 50;
                         return cStart < slotEnd && cEnd > slotStart;
                     });
+                },
+
+                toggleAppointmentView() {
+                    this.appointmentViewMode = this.appointmentViewMode === 'calendar' ? 'list' : 'calendar';
+                    if (this.appointmentViewMode === 'calendar') {
+                        if (!this.calendarWeekStart) this.setCalendarWeekToNow();
+                        this.loadCitas();
+                    }
                 },
 
                 prevWeek() {
@@ -1469,7 +1497,11 @@
                 },
 
                 formatCitaFecha(fecha) {
-                    return fecha ? String(fecha).slice(0, 10) : '';
+                    const ymd = this.normalizeCitaFecha(fecha);
+                    if (!ymd) return '';
+                    const [y, m, d] = ymd.split('-').map(Number);
+                    const dt = new Date(y, m - 1, d);
+                    return dt.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
                 },
 
                 openModalCita(cita) {
