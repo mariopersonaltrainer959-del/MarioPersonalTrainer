@@ -1016,7 +1016,7 @@ router.post('/api/google-calendar/sync-now', async (req, res) => {
     const negocioId = req.negocioId || 1;
     const connected = await googleCalendar.isConnected(negocioId);
     if (!connected) return res.status(400).json({ error: 'Conecta Google Calendar primero.' });
-    const r = await googleCalendarImport.syncNow(negocioId, { daysPast: 7, daysFuture: 60 });
+    const r = await googleCalendarImport.syncNow(negocioId, { daysPast: 30, daysFuture: 90 });
     if (!r.ok) return res.status(400).json({ error: r.error || 'No se pudo sincronizar' });
     res.json(r);
   } catch (e) {

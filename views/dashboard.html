@@ -126,7 +126,7 @@
             <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
                 <nav class="nav-tabs-wrap flex gap-1 py-2">
                     <button @click="activeTab = 'inicio'; loadStats()" class="nav-tab" :class="activeTab === 'inicio' && 'nav-tab-active'">Inicio</button>
-                    <button @click="activeTab = 'appointments'" class="nav-tab" :class="activeTab === 'appointments' && 'nav-tab-active'">Entrenos</button>
+                    <button @click="activeTab = 'appointments'; refreshEntrenos(false)" class="nav-tab" :class="activeTab === 'appointments' && 'nav-tab-active'">Entrenos</button>
                     <button @click="activeTab = 'pacientes'; loadPacientes()" class="nav-tab" :class="activeTab === 'pacientes' && 'nav-tab-active'">Clientes</button>
                     <button @click="activeTab = 'landing'; loadLanding()" class="nav-tab" :class="activeTab === 'landing' && 'nav-tab-active'">Landing</button>
                     <button @click="activeTab = 'facturas'; loadFacturas()" class="nav-tab" :class="activeTab === 'facturas' && 'nav-tab-active'">Facturas</button>
@@ -194,8 +194,12 @@
                         <div class="flex flex-wrap items-center gap-2">
                             <button @click="openModalCita()" class="btn-primary text-sm sm:text-base">+ Crear entreno</button>
                             <button @click="appointmentViewMode = appointmentViewMode === 'calendar' ? 'list' : 'calendar'" class="btn-secondary text-sm" x-text="appointmentViewMode === 'calendar' ? 'Vista lista' : 'Vista calendario'"></button>
-                            <button @click="loadCitas()" class="btn-ghost min-h-[44px] text-sm">Actualizar</button>
+                            <button type="button" @click="refreshEntrenos(true)" :disabled="citasRefreshing" class="btn-ghost min-h-[44px] text-sm">
+                                <span x-show="!citasRefreshing">Actualizar</span>
+                                <span x-show="citasRefreshing">Actualizando...</span>
+                            </button>
                         </div>
+                        <p x-show="citasRefreshMessage" class="text-sm mb-3 px-1" :class="citasRefreshMessage.includes('Error') ? 'text-red-600' : 'text-green-700'" x-text="citasRefreshMessage"></p>
                     </div>
 
                     <!-- Vista calendario semanal -->
@@ -792,7 +796,7 @@
                                     </label>
                                     <label class="flex items-center gap-2 mb-3 cursor-pointer">
                                         <input type="checkbox" x-model="googleCalendarImportEnabled" @change="saveGoogleCalendarImportEnabled()">
-                                        <span class="text-sm">Importar eventos de este calendario al panel (se crearán como entrenos)</span>
+                                        <span class="text-sm">Importar eventos de este calendario al panel (se crearán como entrenos). Actívalo y pulsa «Sincronizar ahora» o «Actualizar» en Entrenos.</span>
                                     </label>
                                     <button type="button" @click="syncGoogleCalendarNow()" :disabled="googleCalendarSyncingNow" class="btn-secondary mb-3">
                                         <span x-show="!googleCalendarSyncingNow">Sincronizar ahora desde Google</span>
@@ -1028,6 +1032,8 @@
                 activeTab: 'inicio',
                 stats: {},
                 citas: [],
+                citasRefreshing: false,
+                citasRefreshMessage: '',
                 pacientes: [],
                 loadingPacientes: false,
                 showPacienteForm: false,
@@ -1143,11 +1149,19 @@
                         this.loadUsers(),
                         this.loadGoogleCalendarStatus()
                     ]);
+                    await this.loadGoogleCalendarImportConfig();
+                    if (this.googleCalendarConnected && this.googleCalendarImportEnabled) {
+                        await this.syncGoogleCalendarNow();
+                    }
                     const params = new URLSearchParams(window.location.search);
                     if (params.get('google_calendar') === 'ok') {
                         this.googleCalendarMessage = 'Conectado correctamente. Las reservas se crearán en tu Google Calendar.';
                         this.activeTab = 'config';
                         await this.loadGoogleCalendarStatus();
+                        await this.loadGoogleCalendarImportConfig();
+                        if (this.googleCalendarConnected && this.googleCalendarImportEnabled) {
+                            await this.syncGoogleCalendarNow();
+                        }
                         window.history.replaceState({}, '', '/dashboard');
                     } else if (params.get('google_calendar') === 'error') {
                         this.googleCalendarMessage = decodeURIComponent(params.get('message') || 'Error al conectar');
@@ -1319,13 +1333,19 @@
                     }
                 },
 
+                formatLocalDateYMD(d) {
+                    const y = d.getFullYear();
+                    const m = String(d.getMonth() + 1).padStart(2, '0');
+                    const day = String(d.getDate()).padStart(2, '0');
+                    return `${y}-${m}-${day}`;
+                },
+
                 setCalendarWeekToNow() {
                     const today = new Date();
                     const day = today.getDay();
                     const diff = today.getDate() - (day === 0 ? 6 : day - 1);
-                    const monday = new Date(today);
-                    monday.setDate(diff);
-                    this.calendarWeekStart = monday.toISOString().slice(0, 10);
+                    const monday = new Date(today.getFullYear(), today.getMonth(), diff);
+                    this.calendarWeekStart = this.formatLocalDateYMD(monday);
                 },
 
                 getCalendarWeekDays() {
@@ -1336,7 +1356,7 @@
                     for (let i = 0; i < 7; i++) {
                         const d = new Date(m);
                         d.setDate(m.getDate() + i);
-                        const dateStr = d.toISOString().slice(0, 10);
+                        const dateStr = this.formatLocalDateYMD(d);
                         days.push({ date: dateStr, label: dayNames[i] + ' ' + d.getDate() });
                     }
                     return days;
@@ -1357,51 +1377,90 @@
                 },
 
                 getCitasInCell(dayStr, hour) {
+                    const slotStart = hour * 60;
+                    const slotEnd = (hour + 1) * 60;
                     return this.citas.filter(c => {
                         const fechaStr = c.fecha ? String(c.fecha).slice(0, 10) : '';
                         if (fechaStr !== dayStr) return false;
-                        const h = parseInt(String(c.hora_inicio).split(':')[0], 10);
-                        return h === hour;
+                        const [sh, sm] = String(c.hora_inicio || '0:0').split(':').map(Number);
+                        const [eh, em] = String(c.hora_fin || c.hora_inicio || '0:0').split(':').map(Number);
+                        const cStart = sh * 60 + (sm || 0);
+                        let cEnd = eh * 60 + (em || 0);
+                        if (cEnd <= cStart) cEnd = cStart + 50;
+                        return cStart < slotEnd && cEnd > slotStart;
                     });
                 },
 
                 prevWeek() {
-                    const m = new Date(this.calendarWeekStart + 'T12:00:00');
+                    const [y, mo, d] = this.calendarWeekStart.split('-').map(Number);
+                    const m = new Date(y, mo - 1, d);
                     m.setDate(m.getDate() - 7);
-                    this.calendarWeekStart = m.toISOString().slice(0, 10);
-                    this.loadCitas();
+                    this.calendarWeekStart = this.formatLocalDateYMD(m);
+                    this.refreshEntrenos(false);
                 },
 
                 nextWeek() {
-                    const m = new Date(this.calendarWeekStart + 'T12:00:00');
+                    const [y, mo, d] = this.calendarWeekStart.split('-').map(Number);
+                    const m = new Date(y, mo - 1, d);
                     m.setDate(m.getDate() + 7);
-                    this.calendarWeekStart = m.toISOString().slice(0, 10);
-                    this.loadCitas();
+                    this.calendarWeekStart = this.formatLocalDateYMD(m);
+                    this.refreshEntrenos(false);
                 },
 
                 goToToday() {
                     this.setCalendarWeekToNow();
-                    this.loadCitas();
+                    this.refreshEntrenos(false);
+                },
+
+                async refreshEntrenos(syncGoogle) {
+                    if (this.citasRefreshing) return;
+                    this.citasRefreshing = true;
+                    this.citasRefreshMessage = '';
+                    try {
+                        if (syncGoogle && this.googleCalendarConnected) {
+                            const res = await fetch('/dashboard/api/google-calendar/sync-now', { method: 'POST' });
+                            const data = await res.json().catch(() => ({}));
+                            if (data && data.ok) {
+                                this.citasRefreshMessage = `Google: ${data.created || 0} nuevos, ${data.updated || 0} actualizados. `;
+                            } else if (data.error) {
+                                this.citasRefreshMessage = 'Error Google: ' + data.error;
+                            }
+                        } else if (syncGoogle && !this.googleCalendarConnected) {
+                            this.citasRefreshMessage = 'Conecta Google Calendar en Configuración y activa «Importar eventos». ';
+                        }
+                        await this.loadCitas();
+                        const n = (this.citas || []).length;
+                        this.citasRefreshMessage = (this.citasRefreshMessage || '') + `${n} entreno(s) en el periodo mostrado.`;
+                    } catch (e) {
+                        this.citasRefreshMessage = 'Error al actualizar. Intenta de nuevo.';
+                        this.citas = [];
+                    } finally {
+                        this.citasRefreshing = false;
+                    }
                 },
 
                 async loadCitas() {
                     try {
                         if (this.appointmentViewMode === 'calendar' && this.calendarWeekStart) {
-                            const mon = new Date(this.calendarWeekStart + 'T12:00:00');
-                            const sun = new Date(mon);
-                            sun.setDate(mon.getDate() + 6);
+                            const [y, mo, d] = this.calendarWeekStart.split('-').map(Number);
+                            const mon = new Date(y, mo - 1, d);
+                            const sun = new Date(y, mo - 1, d + 6);
                             this.filters.startDate = this.calendarWeekStart;
-                            this.filters.endDate = sun.getFullYear() + '-' + String(sun.getMonth() + 1).padStart(2, '0') + '-' + String(sun.getDate()).padStart(2, '0');
+                            this.filters.endDate = this.formatLocalDateYMD(sun);
                         }
                         let url = '/dashboard/api/citas?';
                         if (this.filters.startDate) url += 'startDate=' + encodeURIComponent(this.filters.startDate) + '&';
                         if (this.filters.endDate) url += 'endDate=' + encodeURIComponent(this.filters.endDate) + '&';
                         const res = await fetch(url);
                         const data = await res.json();
+                        if (!res.ok) {
+                            throw new Error(data.error || 'Error cargando entrenos');
+                        }
                         this.citas = data.citas || [];
                     } catch (error) {
                         console.error('Error cargando citas:', error);
                         this.citas = [];
+                        throw error;
                     }
                 },
 
