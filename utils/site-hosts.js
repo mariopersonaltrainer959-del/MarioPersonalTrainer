@@ -51,6 +51,8 @@ function getPublicSiteBaseUrl() {
 
 /** URI exacta que debe estar en Google Cloud → Credenciales OAuth → URIs de redirección */
 function getGoogleCalendarRedirectUri() {
+  const forced = (process.env.GOOGLE_OAUTH_REDIRECT_URI || '').trim();
+  if (forced) return forced.replace(/\/$/, '');
   return `${getOAuthRedirectBase()}/dashboard/api/google-calendar/callback`;
 }
 

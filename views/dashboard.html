@@ -756,8 +756,15 @@
                                     <p class="text-xs text-gray-500 mt-2">Serás redirigido a Google para autorizar. Solo se crean y leen eventos en el calendario que elijas.</p>
                                     <div class="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900" x-show="googleCalendarRedirectUri">
                                         <p class="font-semibold mb-1">Si ves «redirect_uri_mismatch» en Google</p>
-                                        <p class="mb-1">En Google Cloud → Credenciales → tu cliente OAuth → <strong>URIs de redirección autorizados</strong>, añade exactamente:</p>
-                                        <code class="block break-all text-[11px] bg-white/80 p-2 rounded border border-amber-100" x-text="googleCalendarRedirectUri"></code>
+                                        <p class="mb-2">Google rechaza la conexión si la URI no está en <strong>el mismo cliente OAuth</strong> que Railway (<code>GOOGLE_CLIENT_ID</code>). <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener" class="underline font-medium">Abrir Credenciales</a> → Aplicación web → añade:</p>
+                                        <p class="mb-1"><strong>Origen JavaScript:</strong> <span class="font-mono" x-text="googleCalendarOrigin"></span></p>
+                                        <p class="mb-1"><strong>URI de redirección</strong> (copiar tal cual):</p>
+                                        <div class="flex flex-wrap gap-2 items-start mb-2">
+                                            <code class="block flex-1 break-all text-[11px] bg-white/80 p-2 rounded border border-amber-100" x-text="googleCalendarRedirectUri"></code>
+                                            <button type="button" @click="copyGoogleCalendarRedirectUri()" class="btn-secondary text-xs shrink-0">Copiar</button>
+                                        </div>
+                                        <p class="text-amber-800" x-show="googleCalendarCopyMessage" x-text="googleCalendarCopyMessage"></p>
+                                        <p class="mt-1 text-amber-800">Guarda, espera 1–2 min y vuelve a conectar.</p>
                                     </div>
                                 </div>
                             </template>
@@ -1061,6 +1068,8 @@
                 googleCalendarMessage: '',
                 googleCalendarLoading: false,
                 googleCalendarRedirectUri: '',
+                googleCalendarOrigin: '',
+                googleCalendarCopyMessage: '',
                 googleCalendarCalendars: [],
                 googleCalendarCalendarId: 'primary',
                 googleCalendarCalendarsLoading: false,
@@ -1548,6 +1557,12 @@
                         const uriRes = await fetch('/dashboard/api/google-calendar/redirect-uri');
                         const uriData = await uriRes.json().catch(() => ({}));
                         this.googleCalendarRedirectUri = uriData.redirectUri || '';
+                        try {
+                            const u = new URL(this.googleCalendarRedirectUri);
+                            this.googleCalendarOrigin = u.origin;
+                        } catch (e) {
+                            this.googleCalendarOrigin = 'https://admin.marioentrenadorpersonal.pro';
+                        }
                         const res = await fetch('/dashboard/api/google-calendar/status');
                         const data = await res.json();
                         this.googleCalendarConnected = !!data.connected;
@@ -1591,12 +1606,26 @@
                         this.googleCalendarCalendarId = this.googleCalendarCalendarId || 'primary';
                     }
                 },
+                copyGoogleCalendarRedirectUri() {
+                    const uri = this.googleCalendarRedirectUri || '';
+                    if (!uri) return;
+                    navigator.clipboard.writeText(uri).then(() => {
+                        this.googleCalendarCopyMessage = 'URI copiada. Pégala en Google Cloud y guarda.';
+                        setTimeout(() => { this.googleCalendarCopyMessage = ''; }, 5000);
+                    }).catch(() => {
+                        this.googleCalendarCopyMessage = 'Copia manualmente la URI de arriba.';
+                    });
+                },
                 async connectGoogleCalendar() {
                     this.googleCalendarLoading = true;
                     this.googleCalendarMessage = '';
                     try {
                         const res = await fetch('/dashboard/api/google-calendar/auth-url');
                         const data = await res.json();
+                        if (data.redirectUri) {
+                            this.googleCalendarRedirectUri = data.redirectUri;
+                            try { this.googleCalendarOrigin = new URL(data.redirectUri).origin; } catch (e) {}
+                        }
                         if (data.url) {
                             window.location.href = data.url;
                         } else {
