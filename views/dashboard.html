@@ -545,7 +545,8 @@
                                             <td x-text="r.updated_at ? String(r.updated_at).slice(0, 16).replace('T', ' ') : '—'"></td>
                                             <td class="text-right whitespace-nowrap">
                                                 <button type="button" @click="abrirRutinaHistorial(r)" class="btn-link mr-3">Editar</button>
-                                                <a :href="'/dashboard/api/rutinas/pdf?paciente_id=' + r.paciente_id + '&semana_inicio=' + r.semana_inicio" target="_blank" rel="noopener" class="btn-link">Ver PDF</a>
+                                                <a :href="'/dashboard/api/rutinas/pdf?paciente_id=' + r.paciente_id + '&semana_inicio=' + r.semana_inicio" target="_blank" rel="noopener" class="btn-link mr-3">Ver PDF</a>
+                                                <button type="button" @click="eliminarRutina(r)" class="text-red-600 hover:text-red-700 text-sm font-medium">Eliminar</button>
                                             </td>
                                         </tr>
                                     </template>
@@ -1333,6 +1334,28 @@
                     this.rutinaPacienteId = String(r.paciente_id);
                     this.rutinaSemanaInicio = String(r.semana_inicio).slice(0, 10);
                     this.loadRutina();
+                },
+
+                async eliminarRutina(r) {
+                    if (!r || !r.id) return;
+                    const label = (r.paciente_nombre || 'Cliente') + ' · semana ' + this.formatCitaFecha(r.semana_inicio);
+                    if (!confirm('¿Eliminar la rutina de ' + label + '? Esta acción no se puede deshacer.')) return;
+                    try {
+                        const res = await fetch('/dashboard/api/rutinas/' + r.id, { method: 'DELETE' });
+                        const data = await res.json().catch(() => ({}));
+                        if (data.success) {
+                            if (String(this.rutinaPlanId) === String(r.id)) {
+                                this.rutinaPlanId = null;
+                                this.rutinaNotas = '';
+                                for (const d of this.rutinaDiasLista) this.rutinaDiasTexto[d.key] = '';
+                            }
+                            await this.loadRutinasHistorial();
+                        } else {
+                            alert(data.error || 'Error al eliminar');
+                        }
+                    } catch (e) {
+                        alert('Error de conexión');
+                    }
                 },
 
                 async loadRutinasTab() {

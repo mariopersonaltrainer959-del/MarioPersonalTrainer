@@ -849,6 +849,18 @@ router.put('/api/rutinas', async (req, res) => {
   }
 });
 
+router.delete('/api/rutinas/:id', async (req, res) => {
+  try {
+    const negocioId = req.negocioId || 1;
+    const ok = await rutinasService.remove(negocioId, req.params.id);
+    if (!ok) return res.status(404).json({ error: 'Rutina no encontrada' });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error eliminando rutina:', error);
+    res.status(500).json({ error: 'Error eliminando rutina' });
+  }
+});
+
 router.get('/api/rutinas/pdf', async (req, res) => {
   try {
     const negocioId = req.negocioId || 1;
