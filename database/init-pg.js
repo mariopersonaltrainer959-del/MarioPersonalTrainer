@@ -183,6 +183,19 @@ async function initPostgres() {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `);
+  await runQuery(`
+    CREATE TABLE IF NOT EXISTS rutinas_semanales (
+      id SERIAL PRIMARY KEY,
+      negocio_id INTEGER NOT NULL REFERENCES negocio(id),
+      paciente_id INTEGER NOT NULL REFERENCES pacientes(id),
+      semana_inicio DATE NOT NULL,
+      dias_json TEXT NOT NULL DEFAULT '{}',
+      notas TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(negocio_id, paciente_id, semana_inicio)
+    )
+  `);
 
   // Negocio por defecto (id=1) para que landing y dashboard usen el mismo negocio
   const negocioExists = await getQuery('SELECT id FROM negocio WHERE id = 1');

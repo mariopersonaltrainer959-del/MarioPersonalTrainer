@@ -363,6 +363,9 @@ Derechos: Puede ejercer sus derechos de acceso, rectificación, supresión, limi
     const { runGoogleCalendarImportMigrations } = require('./google-calendar-import-migrations');
     await runGoogleCalendarImportMigrations();
 
+    const { runRutinasMigrations } = require('./rutinas-migrations');
+    await runRutinasMigrations();
+
     // Teléfono y dirección de contacto (landing / mapa)
     await runQuery(
       `UPDATE business_config SET value = ? WHERE key = 'businessPhone' AND (value IS NULL OR value = '' OR value = '+34 600 000 000')`,

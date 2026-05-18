@@ -23,6 +23,7 @@ const negocioService = require('../lib/negocio');
 const { getResumenMes } = require('../lib/stats');
 const plantillasService = require('../lib/plantillas');
 const facturasService = require('../lib/facturas');
+const rutinasService = require('../lib/rutinas-semanales');
 const { sendTestEmailWithNegocio } = require('../lib/email-negocio');
 const reputacionPro = require('../lib/reputacion-pro');
 const googleCalendar = require('../lib/google-calendar');
@@ -803,6 +804,58 @@ router.delete('/api/facturas/:id', async (req, res) => {
   } catch (error) {
     console.error('Error eliminando factura:', error);
     res.status(500).json({ error: 'Error eliminando factura' });
+  }
+});
+
+// Rutinas semanales (ejercicios por día + PDF)
+router.get('/api/rutinas', async (req, res) => {
+  try {
+    const negocioId = req.negocioId || 1;
+    const { paciente_id, semana_inicio } = req.query;
+    if (!paciente_id || !semana_inicio) {
+      return res.status(400).json({ error: 'paciente_id y semana_inicio son obligatorios' });
+    }
+    const plan = await rutinasService.getByPacienteSemana(negocioId, paciente_id, semana_inicio);
+    const paciente = await pacientesService.getById(negocioId, paciente_id);
+    res.json({
+      plan,
+      paciente: paciente ? { id: paciente.id, nombre: paciente.nombre } : null
+    });
+  } catch (error) {
+    console.error('Error obteniendo rutina:', error);
+    res.status(400).json({ error: error.message || 'Error obteniendo rutina' });
+  }
+});
+
+router.put('/api/rutinas', async (req, res) => {
+  try {
+    const negocioId = req.negocioId || 1;
+    const result = await rutinasService.save(negocioId, req.body);
+    res.json({ success: true, id: result.id });
+  } catch (error) {
+    console.error('Error guardando rutina:', error);
+    res.status(400).json({ error: error.message || 'Error guardando rutina' });
+  }
+});
+
+router.get('/api/rutinas/pdf', async (req, res) => {
+  try {
+    const negocioId = req.negocioId || 1;
+    const { paciente_id, semana_inicio } = req.query;
+    if (!paciente_id || !semana_inicio) {
+      return res.status(400).send('paciente_id y semana_inicio son obligatorios');
+    }
+    const buffer = await rutinasService.generatePdfBuffer(negocioId, paciente_id, semana_inicio);
+    if (!buffer) return res.status(404).send('Cliente no encontrado');
+    const paciente = await pacientesService.getById(negocioId, paciente_id);
+    const nombre = (paciente && paciente.nombre) ? String(paciente.nombre).replace(/[^\w\s-]/gi, '').trim().replace(/\s+/g, '-') : 'cliente';
+    const filename = `rutina-${nombre}-${String(semana_inicio).slice(0, 10)}.pdf`;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+    res.send(buffer);
+  } catch (error) {
+    console.error('Error generando PDF rutina:', error);
+    res.status(500).send('Error generando PDF');
   }
 });
 

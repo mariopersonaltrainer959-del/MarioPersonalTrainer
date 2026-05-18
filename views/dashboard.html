@@ -128,6 +128,7 @@
                     <button @click="activeTab = 'inicio'; loadStats()" class="nav-tab" :class="activeTab === 'inicio' && 'nav-tab-active'">Inicio</button>
                     <button @click="activeTab = 'appointments'; refreshEntrenos(false)" class="nav-tab" :class="activeTab === 'appointments' && 'nav-tab-active'">Entrenos</button>
                     <button @click="activeTab = 'pacientes'; loadPacientes()" class="nav-tab" :class="activeTab === 'pacientes' && 'nav-tab-active'">Clientes</button>
+                    <button @click="activeTab = 'rutinas'; loadRutinasTab()" class="nav-tab" :class="activeTab === 'rutinas' && 'nav-tab-active'">Rutinas</button>
                     <button @click="activeTab = 'landing'; loadLanding()" class="nav-tab" :class="activeTab === 'landing' && 'nav-tab-active'">Landing</button>
                     <button @click="activeTab = 'facturas'; loadFacturas()" class="nav-tab" :class="activeTab === 'facturas' && 'nav-tab-active'">Facturas</button>
                     <button @click="activeTab = 'reputacion'; loadReputacion()" class="nav-tab" :class="activeTab === 'reputacion' && 'nav-tab-active'">Reputación</button>
@@ -406,6 +407,7 @@
                                         <td><span class="badge" :class="p.estado==='activo' ? 'badge-confirmada' : p.estado==='en_proceso' ? 'badge-pendiente' : p.estado==='alta_terapeutica' ? 'badge-pasada' : 'badge-pasada'" x-text="p.estado"></span></td>
                                         <td class="text-right">
                                             <button @click="openFichaPaciente(p.id)" class="btn-link mr-2">Ficha</button>
+                                            <button @click="openRutinaPaciente(p)" class="btn-link mr-2">Rutina</button>
                                             <button @click="openEditPaciente(p)" class="btn-link mr-2">Editar</button>
                                             <button @click="exportPaciente(p.id)" class="text-gray-600 hover:underline mr-2">Exportar</button>
                                             <button @click="confirmDeletePaciente(p)" class="text-red-600 hover:underline">Eliminar</button>
@@ -468,6 +470,55 @@
                             </div>
                             <p x-show="editPacienteMessage" class="text-sm" :class="editPacienteMessage.includes('correctamente') ? 'text-green-600' : 'text-red-600'" x-text="editPacienteMessage"></p>
                         </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Rutinas semanales -->
+            <div x-show="activeTab === 'rutinas'" class="fade-in">
+                <div class="card bg-white p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Rutina semanal</h2>
+                    <p class="text-sm text-gray-600 mb-6">Escribe los ejercicios de cada día (uno por línea). Guarda y descarga el PDF para enviarlo al cliente.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Cliente *</label>
+                            <select x-model="rutinaPacienteId" @change="loadRutina()" class="input-modern w-full" required>
+                                <option value="">— Seleccionar cliente —</option>
+                                <template x-for="p in pacientes" :key="'rut-' + p.id">
+                                    <option :value="String(p.id)" x-text="p.nombre"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Semana (lunes)</label>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <button type="button" @click="shiftRutinaSemana(-1)" class="btn-secondary px-3" title="Semana anterior">←</button>
+                                <input type="date" x-model="rutinaSemanaInicio" @change="loadRutina()" class="input-modern flex-1 min-w-[140px]">
+                                <button type="button" @click="shiftRutinaSemana(1)" class="btn-secondary px-3" title="Semana siguiente">→</button>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1" x-show="rutinaSemanaFin">Del <span x-text="formatCitaFecha(rutinaSemanaInicio)"></span> al <span x-text="formatCitaFecha(rutinaSemanaFin)"></span></p>
+                        </div>
+                    </div>
+                    <p x-show="rutinaClienteNombre" class="text-sm font-medium text-gray-800 mb-4">Plan para: <span x-text="rutinaClienteNombre"></span></p>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+                        <template x-for="d in rutinaDiasLista" :key="d.key">
+                            <div class="border border-gray-100 rounded-xl p-4 bg-gray-50/50">
+                                <label class="block text-sm font-semibold text-gray-900 mb-2" x-text="d.label"></label>
+                                <textarea x-model="rutinaDiasTexto[d.key]" class="input-modern w-full text-sm" rows="5" placeholder="Un ejercicio por línea&#10;Ej: Press banca 4x8&#10;Sentadilla 3x10"></textarea>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Notas generales (opcional)</label>
+                        <textarea x-model="rutinaNotas" class="input-modern w-full" rows="2" placeholder="Calentamiento, descansos, recordatorios..."></textarea>
+                    </div>
+                    <div class="flex flex-wrap gap-3 items-center">
+                        <button type="button" @click="saveRutina()" :disabled="savingRutina || !rutinaPacienteId" class="btn-primary">
+                            <span x-show="!savingRutina">Guardar rutina</span>
+                            <span x-show="savingRutina">Guardando...</span>
+                        </button>
+                        <a :href="rutinaPdfHref()" target="_blank" rel="noopener" class="btn-secondary" :class="!rutinaPacienteId && 'pointer-events-none opacity-50'">Descargar PDF</a>
+                        <span x-show="rutinaMessage" class="text-sm" :class="rutinaMessage.includes('correctamente') ? 'text-green-600' : 'text-red-600'" x-text="rutinaMessage"></span>
                     </div>
                 </div>
             </div>
@@ -1042,6 +1093,24 @@
                 pacienteEstadoFilter: '',
                 creatingPaciente: false,
                 pacienteMessage: '',
+                rutinaPacienteId: '',
+                rutinaSemanaInicio: '',
+                rutinaSemanaFin: '',
+                rutinaClienteNombre: '',
+                rutinaNotas: '',
+                rutinaPlanId: null,
+                rutinaMessage: '',
+                savingRutina: false,
+                rutinaDiasTexto: { lunes: '', martes: '', miercoles: '', jueves: '', viernes: '', sabado: '', domingo: '' },
+                rutinaDiasLista: [
+                    { key: 'lunes', label: 'Lunes' },
+                    { key: 'martes', label: 'Martes' },
+                    { key: 'miercoles', label: 'Miércoles' },
+                    { key: 'jueves', label: 'Jueves' },
+                    { key: 'viernes', label: 'Viernes' },
+                    { key: 'sabado', label: 'Sábado' },
+                    { key: 'domingo', label: 'Domingo' }
+                ],
                 fichaPaciente: { show: false, paciente: null, citas: [], totalSesiones: 0, facturacionEstimada: 0, proximaCita: null },
                 editarPacienteId: null,
                 editPacienteModal: { show: false },
@@ -1178,6 +1247,99 @@
                     } catch (e) {
                         this.stats = {};
                     }
+                },
+
+                getMondayISO(d) {
+                    const x = d ? new Date(d) : new Date();
+                    const day = x.getDay();
+                    const diff = day === 0 ? -6 : 1 - day;
+                    x.setDate(x.getDate() + diff);
+                    return x.toISOString().slice(0, 10);
+                },
+
+                async loadRutinasTab() {
+                    if (!this.rutinaSemanaInicio) this.rutinaSemanaInicio = this.getMondayISO();
+                    if (!this.pacientes.length) await this.loadPacientes();
+                    if (this.rutinaPacienteId) await this.loadRutina();
+                },
+
+                shiftRutinaSemana(delta) {
+                    const base = this.rutinaSemanaInicio || this.getMondayISO();
+                    const d = new Date(base + 'T12:00:00');
+                    d.setDate(d.getDate() + delta * 7);
+                    this.rutinaSemanaInicio = d.toISOString().slice(0, 10);
+                    this.loadRutina();
+                },
+
+                async loadRutina() {
+                    if (!this.rutinaPacienteId || !this.rutinaSemanaInicio) return;
+                    this.rutinaSemanaInicio = this.getMondayISO(this.rutinaSemanaInicio);
+                    try {
+                        const url = '/dashboard/api/rutinas?paciente_id=' + encodeURIComponent(this.rutinaPacienteId) + '&semana_inicio=' + encodeURIComponent(this.rutinaSemanaInicio);
+                        const res = await fetch(url);
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.error || 'Error cargando rutina');
+                        const plan = data.plan || {};
+                        this.rutinaPlanId = plan.id;
+                        this.rutinaSemanaFin = plan.semana_fin || '';
+                        this.rutinaNotas = plan.notas || '';
+                        this.rutinaClienteNombre = (data.paciente && data.paciente.nombre) || '';
+                        for (const d of this.rutinaDiasLista) {
+                            const arr = (plan.dias && plan.dias[d.key]) || [];
+                            this.rutinaDiasTexto[d.key] = arr.join('\n');
+                        }
+                        this.rutinaMessage = '';
+                    } catch (e) {
+                        this.rutinaMessage = e.message || 'Error cargando rutina';
+                    }
+                },
+
+                async saveRutina() {
+                    if (!this.rutinaPacienteId) {
+                        this.rutinaMessage = 'Selecciona un cliente';
+                        return;
+                    }
+                    this.rutinaSemanaInicio = this.getMondayISO(this.rutinaSemanaInicio);
+                    this.savingRutina = true;
+                    this.rutinaMessage = '';
+                    const dias = {};
+                    for (const d of this.rutinaDiasLista) {
+                        dias[d.key] = this.rutinaDiasTexto[d.key] || '';
+                    }
+                    try {
+                        const res = await fetch('/dashboard/api/rutinas', {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                paciente_id: this.rutinaPacienteId,
+                                semana_inicio: this.rutinaSemanaInicio,
+                                dias,
+                                notas: this.rutinaNotas
+                            })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            this.rutinaPlanId = data.id;
+                            this.rutinaMessage = 'Rutina guardada correctamente';
+                        } else {
+                            this.rutinaMessage = data.error || 'Error al guardar';
+                        }
+                    } catch (e) {
+                        this.rutinaMessage = 'Error de conexión';
+                    } finally {
+                        this.savingRutina = false;
+                    }
+                },
+
+                rutinaPdfHref() {
+                    if (!this.rutinaPacienteId || !this.rutinaSemanaInicio) return '#';
+                    return '/dashboard/api/rutinas/pdf?paciente_id=' + encodeURIComponent(this.rutinaPacienteId) + '&semana_inicio=' + encodeURIComponent(this.rutinaSemanaInicio);
+                },
+
+                openRutinaPaciente(p) {
+                    this.rutinaPacienteId = String(p.id);
+                    this.activeTab = 'rutinas';
+                    this.loadRutinasTab();
                 },
 
                 async loadPacientes() {
