@@ -1398,16 +1398,11 @@
                 },
 
                 getCitasInCell(dayStr, hour) {
-                    const slotStart = hour * 60;
-                    const slotEnd = (hour + 1) * 60;
+                    // Una sola celda: fila de la hora en que empieza el entreno (evita duplicar en 9:00 y 10:00 si dura >1h)
                     return this.citas.filter(c => {
                         if (this.normalizeCitaFecha(c.fecha) !== dayStr) return false;
-                        const [sh, sm] = String(c.hora_inicio || '0:0').split(':').map(Number);
-                        const [eh, em] = String(c.hora_fin || c.hora_inicio || '0:0').split(':').map(Number);
-                        const cStart = sh * 60 + (sm || 0);
-                        let cEnd = eh * 60 + (em || 0);
-                        if (cEnd <= cStart) cEnd = cStart + 50;
-                        return cStart < slotEnd && cEnd > slotStart;
+                        const [sh] = String(c.hora_inicio || '0:0').split(':').map(Number);
+                        return sh === hour;
                     });
                 },
 
