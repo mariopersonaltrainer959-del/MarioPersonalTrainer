@@ -28,6 +28,7 @@ const reputacionPro = require('../lib/reputacion-pro');
 const googleCalendar = require('../lib/google-calendar');
 const googleCalendarImport = require('../lib/google-calendar-import');
 const { mergeLandingDefaults } = require('../utils/landing-content');
+const { getGoogleCalendarRedirectUri } = require('../utils/site-hosts');
 
 // Textos legales RGPD de ejemplo (cuando no hay nada guardado)
 const TEXTOS_LEGALES_EJEMPLO = {
@@ -895,19 +896,21 @@ router.post('/api/test-email', async (req, res) => {
 });
 
 // --- Google Calendar: OAuth y sincronización ---
+router.get('/api/google-calendar/redirect-uri', (req, res) => {
+  res.json({ redirectUri: getGoogleCalendarRedirectUri() });
+});
+
 router.get('/api/google-calendar/auth-url', (req, res) => {
   const negocioId = req.negocioId || 1;
-  const baseUrl = googleCalendar.getBaseUrl(req);
-  const redirectUri = `${baseUrl.replace(/\/$/, '')}/dashboard/api/google-calendar/callback`;
+  const redirectUri = getGoogleCalendarRedirectUri();
   const url = googleCalendar.getAuthUrl(negocioId, redirectUri);
   if (!url) return res.status(503).json({ error: 'Google Calendar no configurado. Añade GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en el servidor.' });
-  res.json({ url });
+  res.json({ url, redirectUri });
 });
 
 router.get('/api/google-calendar/callback', async (req, res) => {
   const { code, state, error } = req.query;
-  const baseUrl = googleCalendar.getBaseUrl(req);
-  const redirectUri = `${baseUrl.replace(/\/$/, '')}/dashboard/api/google-calendar/callback`;
+  const redirectUri = getGoogleCalendarRedirectUri();
   if (error) {
     return res.redirect('/dashboard?google_calendar=error&message=' + encodeURIComponent(error === 'access_denied' ? 'Has cancelado la autorización' : error));
   }

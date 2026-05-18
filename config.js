@@ -8,8 +8,9 @@
 module.exports = {
   // Información del negocio (pueden sobrescribirse con variables de entorno o desde el dashboard)
   businessName: process.env.BUSINESS_NAME || "Mario Personal Trainer",
-  businessPhone: process.env.BUSINESS_PHONE || "+34 600 000 000",
-  businessEmail: process.env.BUSINESS_EMAIL || "contacto@mariopersonaltrainer.es",
+  businessPhone: process.env.BUSINESS_PHONE || "606 33 08 62",
+  businessEmail: process.env.BUSINESS_EMAIL || "info@marioentrenadorpersonal.pro",
+  businessAddress: process.env.BUSINESS_ADDRESS || "C/ Eslovenia, 5, 29680 Estepona, Málaga",
   
   // Configuración de citas
   appointmentDuration: 50, // Duración por defecto en minutos (configurable desde dashboard)

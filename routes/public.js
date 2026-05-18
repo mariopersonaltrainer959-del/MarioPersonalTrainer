@@ -50,10 +50,13 @@ router.get('/api/landing', async (req, res) => {
 router.get('/api/config', async (req, res) => {
   try {
     const config = await getBusinessConfig();
+    const { getQuery } = require('../utils/db');
+    const negocio = await getQuery('SELECT direccion FROM negocio WHERE id = 1').catch(() => null);
     res.json({
       businessName: config.businessName,
       businessPhone: config.businessPhone,
-      businessEmail: config.businessEmail
+      businessEmail: config.businessEmail,
+      businessAddress: config.businessAddress || (negocio && negocio.direccion) || 'C/ Eslovenia, 5, 29680 Estepona, Málaga'
     });
   } catch (error) {
     res.status(500).json({ error: 'Error obteniendo configuración' });

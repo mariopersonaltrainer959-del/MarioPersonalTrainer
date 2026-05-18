@@ -83,9 +83,10 @@ Todo es **universal**: cada cliente conecta su cuenta con un clic y funciona con
 
 1. Un **proyecto en Google Cloud** con **Google Calendar API** activada.
 2. Credenciales **OAuth** (ID de cliente + secreto).
-3. En **URIs de redirección** de OAuth, la ruta exacta de tu app, por ejemplo en Railway:
-   - `https://mariopersonaltrainer-production.up.railway.app/dashboard/api/google-calendar/callback`  
-   (cámbiala por tu dominio si usas uno propio).
+3. En **URIs de redirección** de OAuth, la ruta exacta de tu app (debe coincidir al 100%):
+   - Con panel en subdominio admin: `https://admin.marioentrenadorpersonal.pro/dashboard/api/google-calendar/callback`
+   - En el panel → Configuración → Google Calendar verás la URI exacta que debes pegar en Google Cloud.
+   - Si usas solo Railway sin dominio: `https://TU-APP.up.railway.app/dashboard/api/google-calendar/callback`
 4. Variables **`GOOGLE_CLIENT_ID`** y **`GOOGLE_CLIENT_SECRET`** en Railway (Variables del servicio).
 
 Después, **desde el panel** → Configuración → **Conectar con Google Calendar** (flujo OAuth). Eso autoriza a la app a usar **tu** calendario (normalmente el calendario `primary`).

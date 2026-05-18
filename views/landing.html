@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#2563eb">
+    <meta name="theme-color" content="#0a0a0a">
     <meta name="robots" content="index, follow, max-image-preview:large">
     <meta name="description" content="Entrenador personal en Estepona (Málaga). Entrenos personalizados y reserva online. Mario Personal Trainer — fuerza, salud y objetivos a tu medida.">
     <meta name="keywords" content="entrenador personal Estepona, personal trainer Estepona, entrenamiento Estepona, fitness Estepona">
@@ -23,172 +23,219 @@
     <title>Mario Personal Trainer Estepona | Entrenamiento personal y reserva online</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        :root {
-            --primary-color: #2563eb;
-            --primary-hover: #1d4ed8;
-            --primary-light: rgba(37, 99, 235, 0.12);
-            --card-radius: 14px;
-            --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
-            --transition-fast: 0.2s ease;
-        }
-        body { font-family: 'Inter', system-ui, sans-serif; -webkit-text-size-adjust: 100%; padding-bottom: env(safe-area-inset-bottom, 0); }
-        [x-cloak] { display: none !important; }
-        .input-landing { width: 100%; padding: 0.75rem 1rem; min-height: 48px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 16px; transition: border-color var(--transition-fast), box-shadow var(--transition-fast); -webkit-appearance: none; appearance: none; }
-        .input-landing:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px var(--primary-light); }
-        select.input-landing { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1.25rem; padding-right: 2.5rem; }
-        .btn-reservar { background: var(--primary-color); color: #fff; padding: 0.875rem 1.5rem; min-height: 48px; border-radius: 12px; font-weight: 600; font-size: 1rem; border: none; cursor: pointer; transition: background var(--transition-fast), transform 0.15s ease; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-        .btn-reservar:hover:not(:disabled) { background: var(--primary-hover); }
-        .btn-reservar:active:not(:disabled) { transform: scale(0.98); }
-        .btn-reservar:disabled { opacity: 0.6; cursor: not-allowed; }
-        .hero-image { width: 100%; max-height: 280px; object-fit: cover; border-radius: var(--card-radius); }
-        @media (min-width: 640px) { .hero-image { max-height: 320px; } }
-        .touch-target { min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
-        .safe-area-padding { padding-left: env(safe-area-inset-left, 0); padding-right: env(safe-area-inset-right, 0); }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/landing-theme.css">
 </head>
-<body class="bg-[#f8fafc] min-h-screen text-gray-800">
+<body class="landing-page">
+    <div class="landing-bg" aria-hidden="true"></div>
+    <div class="landing-overlay" aria-hidden="true"></div>
+
     <div x-data="landingApp()" x-cloak x-init="init()">
-        <!-- Header -->
-        <header class="bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] safe-area-padding" role="banner">
-            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-                <div class="flex justify-between items-center gap-3">
-                    <p class="text-lg sm:text-xl font-bold text-gray-900 truncate min-w-0" x-text="config.businessName || 'Mario Personal Trainer'"></p>
-                    <a :href="'tel:' + (config.businessPhone || '')" class="touch-target shrink-0 py-2 px-3 text-sm sm:text-base text-gray-600 hover:text-[var(--primary-color)] transition-colors rounded-lg -m-2" x-show="config.businessPhone" x-text="config.businessPhone" :aria-label="'Llamar al ' + (config.businessPhone || '')"></a>
-                </div>
-            </div>
-        </header>
+        <nav id="navbar" role="navigation" aria-label="Principal">
+            <a href="#inicio" class="nav-brand" x-text="config.businessName || 'Mario Personal Trainer'"></a>
+            <button type="button" class="nav-toggle" @click="navOpen = !navOpen" aria-label="Abrir menú" :aria-expanded="navOpen">
+                <span></span><span></span><span></span>
+            </button>
+            <ul class="nav-links" :class="{ 'open': navOpen }" id="navLinks">
+                <li><a href="#inicio" @click="navOpen = false">Inicio</a></li>
+                <li><a href="#servicios" @click="navOpen = false">Servicios</a></li>
+                <li><a href="#sobre" @click="navOpen = false">Sobre mí</a></li>
+                <li><a href="#contacto" @click="navOpen = false">Contacto</a></li>
+                <li><a href="#reservar" @click="navOpen = false">Reservar</a></li>
+            </ul>
+        </nav>
 
         <main>
-            <!-- Hero -->
-            <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16" aria-labelledby="hero-title">
-                <template x-if="landing.hero_image_url">
-                    <img :src="landing.hero_image_url" :alt="heroImageAlt()" class="hero-image mb-8" width="1200" height="630" loading="eager" decoding="async" @error="$el.style.display='none'">
-                </template>
-                <div class="text-center">
-                    <h1 id="hero-title" class="text-2xl sm:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-1" x-text="landing.hero_title || 'Mario Personal Trainer'"></h1>
-                    <p class="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto whitespace-pre-line px-1" x-text="landing.hero_subtitle || 'Reserva tu entreno en Estepona de forma sencilla.'"></p>
-                    <a href="#reservar" class="btn-reservar w-full sm:w-auto inline-block mt-6 sm:mt-8 scroll-smooth" x-text="landing.cta_text || 'Reservar entreno'"></a>
+            <section id="inicio" class="hero" aria-labelledby="hero-title">
+                <div class="hero-content">
+                    <template x-if="landing.hero_image_url">
+                        <img :src="landing.hero_image_url" :alt="heroImageAlt()" class="hero-image" width="1200" height="630" loading="eager" decoding="async" @error="$el.style.display='none'">
+                    </template>
+                    <h1 id="hero-title" class="hero-title" x-html="heroTitleHtml()"></h1>
+                    <div class="hero-divider" aria-hidden="true"></div>
+                    <p class="hero-text whitespace-pre-line" x-text="landing.hero_subtitle || 'Entrenador personal en Estepona. Reserva tu entreno online.'"></p>
+                    <a href="#reservar" class="btn-gold" x-text="landing.cta_text || 'Reservar entreno'"></a>
                 </div>
             </section>
 
-            <!-- Sobre la consulta -->
-            <section class="bg-white py-12 sm:py-16" x-show="landing.about_title || landing.about_text" aria-labelledby="about-title">
-                <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-                        <div>
-                            <h2 id="about-title" class="text-2xl font-bold text-gray-900 mb-4" x-text="landing.about_title || 'Entrenamiento personal en Estepona'"></h2>
-                            <p class="text-gray-600 whitespace-pre-line leading-relaxed" x-text="landing.about_text"></p>
-                        </div>
-                        <template x-if="landing.about_image_url">
-                            <img :src="landing.about_image_url" :alt="aboutImageAlt()" class="rounded-[var(--card-radius)] shadow-[var(--shadow-card)] w-full object-cover max-h-72" width="800" height="600" loading="lazy" decoding="async" @error="$el.style.display='none'">
+            <section id="servicios" class="landing-section" x-show="landing.sections && landing.sections.length" aria-labelledby="services-title">
+                <div class="section-inner">
+                    <span class="section-label">Lo que ofrecemos</span>
+                    <h2 id="services-title" class="section-title">Nuestros servicios</h2>
+                    <div class="hero-divider" aria-hidden="true"></div>
+                    <div class="services-grid">
+                        <template x-for="(sec, i) in landing.sections" :key="i">
+                            <article class="service-card">
+                                <h3 x-text="sec.title"></h3>
+                                <p x-text="sec.text"></p>
+                            </article>
                         </template>
                     </div>
                 </div>
             </section>
 
-            <!-- Reserva -->
-            <section id="reservar" class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 scroll-mt-6 sm:scroll-mt-8" aria-labelledby="reserva-title">
-                <div class="bg-white rounded-[var(--card-radius)] shadow-[var(--shadow-card)] p-4 sm:p-8">
-                    <h2 id="reserva-title" class="text-2xl font-bold text-gray-900 mb-2">Reservar sesión</h2>
-                    <p class="text-gray-600 mb-6">Completa tus datos y elige fecha y hora. Recibirás confirmación por email.</p>
-
-                    <form @submit.prevent="bookAppointment()" class="space-y-5">
-                        <div>
-                            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nombre completo *</label>
-                            <input type="text" id="name" x-model="form.name" required minlength="2" maxlength="120"
-                                   class="input-landing" placeholder="Tu nombre">
+            <section id="sobre" class="landing-section" x-show="landing.about_title || landing.about_text" aria-labelledby="about-title">
+                <div class="section-inner">
+                    <span class="section-label">Quiénes somos</span>
+                    <h2 id="about-title" class="section-title" x-text="landing.about_title || 'Entrenamiento personal en Estepona'"></h2>
+                    <div class="hero-divider" aria-hidden="true"></div>
+                    <div class="about-grid">
+                        <div class="about-content">
+                            <p class="whitespace-pre-line" x-text="landing.about_text"></p>
+                            <div class="stats-row">
+                                <div class="stat-item">
+                                    <span class="stat-number">1:1</span>
+                                    <span class="stat-label">Sesiones personalizadas</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">100%</span>
+                                    <span class="stat-label">A tu medida</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">Estepona</span>
+                                    <span class="stat-label">Costa del Sol</span>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-                            <input type="email" id="email" x-model="form.email" required
-                                   class="input-landing" placeholder="tu@email.com">
-                        </div>
-                        <div>
-                            <label for="telefono" class="block text-sm font-medium text-gray-700 mb-1">Teléfono (recomendado para confirmaciones)</label>
-                            <input type="tel" id="telefono" x-model="form.telefono"
-                                   class="input-landing" placeholder="612 345 678">
-                        </div>
-                        <div>
-                            <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Fecha *</label>
-                            <input type="date" id="date" x-model="form.date" @change="loadSlots()" :min="minDate" required
-                                   class="input-landing">
-                        </div>
-                        <div>
-                            <label for="time" class="block text-sm font-medium text-gray-700 mb-1">Hora disponible *</label>
-                            <select id="time" x-model="form.time" required
-                                    :disabled="!form.date || loadingSlots || availableSlots.length === 0"
-                                    class="input-landing disabled:bg-gray-50 disabled:cursor-not-allowed">
-                                <option value="">Selecciona una hora</option>
-                                <template x-for="slot in availableSlots" :key="slot.time">
-                                    <option :value="slot.time" x-text="slot.display"></option>
-                                </template>
-                            </select>
-                            <p x-show="loadingSlots" class="mt-1 text-sm text-gray-500">Cargando horarios...</p>
-                            <p x-show="form.date && !loadingSlots && availableSlots.length === 0" class="mt-1 text-sm text-amber-600">No hay huecos para esta fecha. Elige otra.</p>
-                        </div>
-
-                        <div class="flex items-start gap-3 py-1">
-                            <input type="checkbox" id="acepta_legal" x-model="form.acepta_legal" required
-                                   class="mt-1.5 h-5 w-5 shrink-0 rounded border-gray-300 text-[var(--primary-color)] focus:ring-[var(--primary-color)]">
-                            <label for="acepta_legal" class="text-sm text-gray-700 cursor-pointer select-none">
-                                Acepto la <a href="#" @click.prevent="showPolitica = true" class="text-[var(--primary-color)] font-medium hover:underline">política de privacidad</a> y el consentimiento para el tratamiento de mis datos (obligatorio para reservar).
-                            </label>
-                        </div>
-
-                        <button type="submit" :disabled="submitting" class="btn-reservar w-full py-3 text-lg">
-                            <span x-show="!submitting">Confirmar reserva</span>
-                            <span x-show="submitting">Reservando...</span>
-                        </button>
-
-                        <p x-show="error" class="text-sm text-red-600 bg-red-50 px-4 py-3 rounded-lg" x-text="error"></p>
-                        <p x-show="success" class="text-sm text-green-700 bg-green-50 px-4 py-3 rounded-lg" x-text="success"></p>
-                    </form>
+                        <template x-if="landing.about_image_url">
+                            <img :src="landing.about_image_url" :alt="aboutImageAlt()" width="800" height="600" loading="lazy" decoding="async" @error="$el.style.display='none'">
+                        </template>
+                    </div>
                 </div>
+            </section>
 
-                <div class="mt-8 bg-slate-50 rounded-[var(--card-radius)] p-5 text-sm text-gray-600">
-                    <p class="font-medium text-gray-800 mb-2">Información</p>
-                    <ul class="list-disc list-inside space-y-1">
-                        <li>Recibirás un email de confirmación con los detalles de tu entreno.</li>
-                        <li>Para modificar o cancelar, contacta con al menos 24 h de antelación.</li>
-                    </ul>
+            <section id="contacto" class="landing-section" aria-labelledby="contact-title">
+                <div class="section-inner">
+                    <span class="section-label">Encuéntranos</span>
+                    <h2 id="contact-title" class="section-title">Ubicación y contacto</h2>
+                    <div class="hero-divider" aria-hidden="true"></div>
+                    <div class="contact-grid">
+                        <div class="contact-info">
+                            <div class="contact-item">
+                                <span class="contact-icon" aria-hidden="true">📍</span>
+                                <div>
+                                    <h4>Dirección</h4>
+                                    <p x-html="contactAddressHtml()"></p>
+                                </div>
+                            </div>
+                            <div class="contact-item" x-show="displayPhone()">
+                                <span class="contact-icon" aria-hidden="true">📞</span>
+                                <div>
+                                    <h4>Teléfono</h4>
+                                    <p><a :href="'tel:' + telHref(displayPhone())" x-text="displayPhone()"></a></p>
+                                </div>
+                            </div>
+                            <div class="contact-item" x-show="displayEmail()">
+                                <span class="contact-icon" aria-hidden="true">✉️</span>
+                                <div>
+                                    <h4>Email</h4>
+                                    <p><a :href="'mailto:' + displayEmail()" x-text="displayEmail()"></a></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="map-wrapper">
+                            <iframe
+                                :src="mapsEmbedUrl()"
+                                width="100%"
+                                height="340"
+                                style="border:0;"
+                                allowfullscreen=""
+                                loading="lazy"
+                                referrerpolicy="no-referrer-when-downgrade"
+                                title="Ubicación Mario Personal Trainer en Google Maps">
+                            </iframe>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="reservar" class="landing-section" aria-labelledby="reserva-title">
+                <div class="section-inner">
+                    <span class="section-label">Reserva online</span>
+                    <h2 id="reserva-title" class="section-title">Reservar entreno</h2>
+                    <div class="hero-divider" aria-hidden="true"></div>
+                    <div class="booking-panel">
+                        <p class="booking-intro">Completa tus datos y elige fecha y hora. Recibirás confirmación por email.</p>
+                        <form @submit.prevent="bookAppointment()">
+                            <div class="form-field">
+                                <label for="name">Nombre completo *</label>
+                                <input type="text" id="name" x-model="form.name" required minlength="2" maxlength="120" class="input-landing" placeholder="Tu nombre">
+                            </div>
+                            <div class="form-field">
+                                <label for="email">Email *</label>
+                                <input type="email" id="email" x-model="form.email" required class="input-landing" placeholder="tu@email.com">
+                            </div>
+                            <div class="form-field">
+                                <label for="telefono">Teléfono</label>
+                                <input type="tel" id="telefono" x-model="form.telefono" class="input-landing" placeholder="612 345 678">
+                            </div>
+                            <div class="form-field">
+                                <label for="date">Fecha *</label>
+                                <input type="date" id="date" x-model="form.date" @change="loadSlots()" :min="minDate" required class="input-landing">
+                            </div>
+                            <div class="form-field">
+                                <label for="time">Hora disponible *</label>
+                                <select id="time" x-model="form.time" required
+                                        :disabled="!form.date || loadingSlots || availableSlots.length === 0"
+                                        class="input-landing">
+                                    <option value="">Selecciona una hora</option>
+                                    <template x-for="slot in availableSlots" :key="slot.time">
+                                        <option :value="slot.time" x-text="slot.display"></option>
+                                    </template>
+                                </select>
+                                <p x-show="loadingSlots" class="mt-1 text-sm" style="color:var(--text-muted)">Cargando horarios...</p>
+                                <p x-show="form.date && !loadingSlots && availableSlots.length === 0" class="mt-1 text-sm" style="color:var(--gold-light)">No hay huecos para esta fecha. Elige otra.</p>
+                            </div>
+                            <div class="form-legal">
+                                <input type="checkbox" id="acepta_legal" x-model="form.acepta_legal" required>
+                                <label for="acepta_legal">
+                                    Acepto la <a href="#" @click.prevent="showPolitica = true">política de privacidad</a> y el consentimiento para el tratamiento de mis datos (obligatorio para reservar).
+                                </label>
+                            </div>
+                            <button type="submit" :disabled="submitting" class="btn-gold w-full" style="width:100%;text-align:center">
+                                <span x-show="!submitting">Confirmar reserva</span>
+                                <span x-show="submitting">Reservando...</span>
+                            </button>
+                            <p x-show="error" class="msg-error" x-text="error"></p>
+                            <p x-show="success" class="msg-success" x-text="success"></p>
+                        </form>
+                    </div>
                 </div>
             </section>
         </main>
 
-        <!-- Modal política -->
-        <div x-show="showPolitica" x-cloak class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4" @keydown.escape.window="showPolitica = false">
-            <div class="bg-white rounded-t-2xl sm:rounded-[var(--card-radius)] shadow-xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-5 sm:p-6 safe-area-padding">
-                <h3 class="text-xl font-bold mb-4">Política de privacidad y consentimiento</h3>
-                <div class="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap" x-html="textosLegalesHtml()"></div>
-                <button @click="showPolitica = false" class="mt-4 w-full sm:w-auto min-h-[44px] px-4 py-3 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors">Cerrar</button>
+        <footer class="landing-footer" role="contentinfo">
+            <p class="footer-brand" x-text="config.businessName || 'Mario Personal Trainer'"></p>
+            <p x-html="contactAddressHtml()"></p>
+            <p x-show="displayPhone()">
+                <a :href="'tel:' + telHref(displayPhone())" x-text="displayPhone()"></a>
+            </p>
+            <p x-show="displayEmail()">
+                <a :href="'mailto:' + displayEmail()" x-text="displayEmail()"></a>
+            </p>
+            <p style="margin-top:16px;font-size:0.75rem;opacity:0.7">© <span x-text="new Date().getFullYear()"></span> Mario Personal Trainer · Estepona</p>
+        </footer>
+
+        <div x-show="showPolitica" class="modal-legal" @keydown.escape.window="showPolitica = false" @click.self="showPolitica = false">
+            <div class="modal-legal-inner">
+                <h3>Política de privacidad y consentimiento</h3>
+                <div x-html="textosLegalesHtml()"></div>
+                <button type="button" @click="showPolitica = false" class="btn-gold" style="margin-top:20px;width:100%">Cerrar</button>
             </div>
         </div>
-
-        <footer class="bg-white border-t border-gray-100 mt-12 sm:mt-16 safe-area-padding" role="contentinfo">
-            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 text-center text-gray-600 text-sm">
-                <p class="font-medium text-gray-900" x-text="config.businessName || 'Mario Personal Trainer'"></p>
-                <p class="mt-1 text-gray-500">Estepona · Costa del Sol · Málaga</p>
-                <p class="mt-1">
-                    <a :href="'mailto:' + (config.businessEmail || '')" class="text-[var(--primary-color)] hover:underline" x-text="config.businessEmail || ''"></a>
-                </p>
-                <p x-show="config.businessPhone" class="mt-1">
-                    <a :href="'tel:' + (config.businessPhone || '')" class="text-[var(--primary-color)] hover:underline" x-text="config.businessPhone"></a>
-                </p>
-            </div>
-        </footer>
     </div>
 
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script>
         function landingApp() {
             return {
-                config: { businessName: '', businessPhone: '', businessEmail: '' },
+                navOpen: false,
+                config: { businessName: '', businessPhone: '', businessEmail: '', businessAddress: '' },
                 landing: {
                     hero_title: '', hero_subtitle: '', hero_image_url: '', about_title: '', about_text: '', about_image_url: '',
-                    cta_text: 'Reservar sesión', sections: [],
+                    cta_text: 'Reservar entreno', sections: [],
+                    contact_address_line1: 'C/ Eslovenia, 5', contact_address_line2: '29680 Estepona, Málaga',
+                    maps_query: 'C/ Eslovenia, 5, 29680 Estepona, Málaga',
                     seo_meta_title: '', seo_meta_description: '', seo_keywords: '', seo_canonical_url: '', seo_og_image_url: ''
                 },
                 form: { name: '', email: '', telefono: '', date: '', time: '', acepta_legal: false },
@@ -204,10 +251,29 @@
                 async init() {
                     await Promise.all([this.loadConfig(), this.loadLanding(), this.loadTextosLegales()]);
                     this.applySeoMeta();
+                    const nav = document.getElementById('navbar');
+                    const onScroll = () => nav && nav.classList.toggle('scrolled', window.scrollY > 40);
+                    window.addEventListener('scroll', onScroll, { passive: true });
+                    onScroll();
+                },
+
+                heroTitleHtml() {
+                    const t = (this.landing.hero_title || 'Entrenamiento personal dedicado a tu salud y rendimiento').trim();
+                    if (t.includes('<em>')) return t;
+                    const parts = t.split(/\s+(?=salud|bienestar|rendimiento)/i);
+                    if (parts.length > 1) {
+                        return parts[0].trim() + '<br><em>' + parts.slice(1).join(' ').trim() + '</em>';
+                    }
+                    const words = t.split(' ');
+                    if (words.length > 4) {
+                        const mid = Math.ceil(words.length / 2);
+                        return words.slice(0, mid).join(' ') + '<br><em>' + words.slice(mid).join(' ') + '</em>';
+                    }
+                    return t.replace(/(salud|bienestar|rendimiento)/gi, '<em>$1</em>');
                 },
 
                 heroImageAlt() {
-                    const t = (this.landing.hero_title || '').replace(/\s*\|\s*[^|]+$/, '').trim();
+                    const t = (this.landing.hero_title || '').replace(/<[^>]+>/g, '').replace(/\s*\|\s*[^|]+$/, '').trim();
                     return t ? t + ' — entrenamiento personal en Estepona' : 'Mario Personal Trainer — entrenador personal en Estepona';
                 },
 
@@ -216,8 +282,38 @@
                     return t ? t + ', Estepona' : 'Mario Personal Trainer, Estepona';
                 },
 
+                displayPhone() {
+                    return (this.config.businessPhone || '606 33 08 62').trim();
+                },
+
+                displayEmail() {
+                    return (this.config.businessEmail || 'info@marioentrenadorpersonal.pro').trim();
+                },
+
+                telHref(phone) {
+                    return String(phone || '').replace(/\s+/g, '');
+                },
+
+                contactAddressHtml() {
+                    const l1 = (this.landing.contact_address_line1 || 'C/ Eslovenia, 5').trim();
+                    const l2 = (this.landing.contact_address_line2 || '29680 Estepona, Málaga').trim();
+                    if (this.config.businessAddress) {
+                        const parts = String(this.config.businessAddress).split(',').map(s => s.trim()).filter(Boolean);
+                        if (parts.length >= 2) {
+                            return parts[0] + '<br>' + parts.slice(1).join(', ');
+                        }
+                        return this.config.businessAddress.replace(/, /g, '<br>');
+                    }
+                    return l1 + '<br>' + l2;
+                },
+
+                mapsEmbedUrl() {
+                    const q = (this.landing.maps_query || this.config.businessAddress || 'C/ Eslovenia, 5, 29680 Estepona, Málaga').trim();
+                    return 'https://www.google.com/maps?q=' + encodeURIComponent(q) + '&output=embed';
+                },
+
                 applySeoMeta() {
-                    const title = (this.landing.seo_meta_title || this.landing.hero_title || 'Mario Personal Trainer Estepona').trim();
+                    const title = (this.landing.seo_meta_title || this.landing.hero_title || 'Mario Personal Trainer Estepona').replace(/<[^>]+>/g, '').trim();
                     const desc = (this.landing.seo_meta_description || this.landing.hero_subtitle || '').trim().slice(0, 320);
                     document.title = title;
                     const setMeta = (sel, attr, val) => {
@@ -236,32 +332,24 @@
                     const link = document.getElementById('link-canonical');
                     if (link) link.setAttribute('href', canonical);
                     const rawImg = (this.landing.seo_og_image_url || this.landing.hero_image_url || '').trim();
-                    const ogAbs = rawImg
-                        ? (rawImg.startsWith('http') ? rawImg : base + (rawImg.startsWith('/') ? rawImg : '/' + rawImg))
-                        : '';
-                    let ogImg = document.querySelector('meta[property="og:image"]');
+                    const ogAbs = rawImg ? (rawImg.startsWith('http') ? rawImg : base + (rawImg.startsWith('/') ? rawImg : '/' + rawImg)) : '';
                     if (ogAbs) {
+                        let ogImg = document.querySelector('meta[property="og:image"]');
                         if (!ogImg) {
                             ogImg = document.createElement('meta');
                             ogImg.setAttribute('property', 'og:image');
                             document.head.appendChild(ogImg);
                         }
                         ogImg.setAttribute('content', ogAbs);
-                        let tw = document.querySelector('meta[name="twitter:image"]');
-                        if (!tw) {
-                            tw = document.createElement('meta');
-                            tw.setAttribute('name', 'twitter:image');
-                            document.head.appendChild(tw);
-                        }
-                        tw.setAttribute('content', ogAbs);
                     }
                     this.injectJsonLd(canonical, title, desc);
                 },
 
                 injectJsonLd(url, name, description) {
-                    const phone = (this.config.businessPhone || '').trim();
-                    const email = (this.config.businessEmail || '').trim();
+                    const phone = this.displayPhone();
+                    const email = this.displayEmail();
                     const businessName = (this.config.businessName || 'Mario Personal Trainer').trim();
+                    const addr = (this.config.businessAddress || this.landing.maps_query || 'C/ Eslovenia, 5, 29680 Estepona, Málaga').trim();
                     const schema = {
                         '@context': 'https://schema.org',
                         '@type': 'LocalBusiness',
@@ -271,13 +359,16 @@
                         areaServed: { '@type': 'City', name: 'Estepona', containedInPlace: { '@type': 'AdministrativeArea', name: 'Málaga' } },
                         address: {
                             '@type': 'PostalAddress',
+                            streetAddress: (this.landing.contact_address_line1 || 'C/ Eslovenia, 5'),
                             addressLocality: 'Estepona',
+                            postalCode: '29680',
                             addressRegion: 'Málaga',
                             addressCountry: 'ES'
                         }
                     };
                     if (phone) schema.telephone = phone;
                     if (email) schema.email = email;
+                    if (addr) schema.address = { '@type': 'PostalAddress', streetAddress: addr };
                     let el = document.getElementById('jsonld-landing');
                     if (!el) {
                         el = document.createElement('script');
@@ -312,8 +403,9 @@
                 textosLegalesHtml() {
                     const p = (this.textosLegales.politica_privacidad || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
                     const c = (this.textosLegales.consentimiento || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
-                    if (!p && !c) return '<p class="text-gray-500">Al reservar aceptas el tratamiento de tus datos para gestionar el entreno.</p>';
-                    return (p ? '<h4>Política de privacidad</h4><p>' + p + '</p>' : '') + (c ? '<h4 class="mt-4">Consentimiento</h4><p>' + c + '</p>' : '');
+                    if (!p && !c) return '<p>Al reservar aceptas el tratamiento de tus datos para gestionar el entreno.</p>';
+                    return (p ? '<h4 style="color:#fff;margin:12px 0 6px">Política de privacidad</h4><p>' + p + '</p>' : '') +
+                        (c ? '<h4 style="color:#fff;margin:12px 0 6px">Consentimiento</h4><p>' + c + '</p>' : '');
                 },
 
                 async loadSlots() {
@@ -336,14 +428,12 @@
                     this.submitting = true;
                     this.error = '';
                     this.success = '';
-
                     const name = (this.form.name || '').trim();
                     if (name.length < 2) {
                         this.error = 'El nombre debe tener al menos 2 caracteres.';
                         this.submitting = false;
                         return;
                     }
-
                     try {
                         const response = await fetch('/api/book', {
                             method: 'POST',
@@ -358,7 +448,6 @@
                             })
                         });
                         const data = await response.json();
-
                         if (data.error) {
                             this.error = data.error;
                         } else {

@@ -362,6 +362,24 @@ Derechos: Puede ejercer sus derechos de acceso, rectificación, supresión, limi
     // --- Google Calendar: importación a bloqueos ---
     const { runGoogleCalendarImportMigrations } = require('./google-calendar-import-migrations');
     await runGoogleCalendarImportMigrations();
+
+    // Teléfono y dirección de contacto (landing / mapa)
+    await runQuery(
+      `UPDATE business_config SET value = ? WHERE key = 'businessPhone' AND (value IS NULL OR value = '' OR value = '+34 600 000 000')`,
+      ['606 33 08 62']
+    ).catch(() => {});
+    await runQuery(
+      `UPDATE business_config SET value = ? WHERE key = 'businessEmail' AND (value IS NULL OR value = '' OR value = 'contacto@mariopersonaltrainer.es')`,
+      ['info@marioentrenadorpersonal.pro']
+    ).catch(() => {});
+    await runQuery(
+      `INSERT INTO business_config (key, value) SELECT 'businessAddress', ? WHERE NOT EXISTS (SELECT 1 FROM business_config WHERE key = 'businessAddress')`,
+      ['C/ Eslovenia, 5, 29680 Estepona, Málaga']
+    ).catch(() => {});
+    await runQuery(
+      `UPDATE negocio SET telefono = COALESCE(NULLIF(telefono, ''), ?), email = COALESCE(NULLIF(email, ''), ?), direccion = COALESCE(NULLIF(direccion, ''), ?) WHERE id = ?`,
+      ['606 33 08 62', 'info@marioentrenadorpersonal.pro', 'C/ Eslovenia, 5, 29680 Estepona, Málaga', DEFAULT_NEGOCIO_ID]
+    ).catch(() => {});
   } catch (err) {
     throw err;
   }

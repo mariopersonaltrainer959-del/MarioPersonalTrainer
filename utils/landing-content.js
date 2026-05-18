@@ -4,16 +4,23 @@
  */
 
 const DEFAULT_LANDING = {
-  hero_title: 'Mario Personal Trainer | Entrenamiento personal en Estepona',
+  hero_title: 'Entrenamiento personal dedicado a tu salud y rendimiento',
   hero_subtitle:
-    'Planes de entrenamiento a medida y seguimiento personalizado en Estepona (Málaga). Reserva tu sesión online y avanza hacia tus objetivos de salud, fuerza y rendimiento.',
+    'Soy Mario, entrenador personal en Estepona. Trabajo contigo con un plan adaptado a tu nivel y a tus metas: pérdida de grasa, fuerza, salud y rendimiento deportivo.\n\nReserva tu entreno online y recibirás confirmación por email.',
   hero_image_url: '',
-  about_title: 'Entrenamiento personal en Estepona',
+  about_title: 'Nuestra forma de trabajar',
   about_text:
-    'Soy Mario, entrenador personal en Estepona. Trabajo contigo con un plan adaptado a tu nivel y a tus metas: pérdida de grasa, ganancia muscular, salud o rendimiento deportivo. La primera sesión sirve para conocernos, valorar tu punto de partida y definir el camino. Reserva tu cita aquí y recibirás confirmación por email.',
+    'Cada persona es distinta. Por eso diseño sesiones personalizadas, con seguimiento cercano y objetivos claros. Ya sea tu primera vez en el gimnasio o quieras dar un salto de rendimiento, te acompaño paso a paso en Global Salud (Estepona).',
   about_image_url: '',
-  cta_text: 'Reservar sesión',
-  sections: [],
+  cta_text: 'Reservar entreno',
+  contact_address_line1: 'C/ Eslovenia, 5',
+  contact_address_line2: '29680 Estepona, Málaga',
+  maps_query: 'C/ Eslovenia, 5, 29680 Estepona, Málaga',
+  sections: [
+    { title: 'Entrenamiento personal', text: 'Sesiones 1 a 1 adaptadas a tu nivel, técnica y objetivos reales.' },
+    { title: 'Pérdida de grasa', text: 'Plan de fuerza y hábitos para mejorar tu composición corporal de forma sostenible.' },
+    { title: 'Fuerza y rendimiento', text: 'Progresión en cargas y movimientos para rendir mejor dentro y fuera del gimnasio.' }
+  ],
   seo_meta_title: 'Mario Personal Trainer Estepona | Entrenamiento personal y reserva online',
   seo_meta_description:
     'Entrenador personal en Estepona (Málaga). Sesiones personalizadas: pérdida de peso, fuerza, salud y rendimiento. Reserva tu cita online de forma sencilla.',

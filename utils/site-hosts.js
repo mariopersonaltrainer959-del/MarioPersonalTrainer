@@ -49,10 +49,16 @@ function getPublicSiteBaseUrl() {
   return (process.env.BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
 }
 
+/** URI exacta que debe estar en Google Cloud → Credenciales OAuth → URIs de redirección */
+function getGoogleCalendarRedirectUri() {
+  return `${getOAuthRedirectBase()}/dashboard/api/google-calendar/callback`;
+}
+
 module.exports = {
   adminHostConfigured,
   isAdminHost,
   getAdminHostname,
   getOAuthRedirectBase,
-  getPublicSiteBaseUrl
+  getPublicSiteBaseUrl,
+  getGoogleCalendarRedirectUri
 };
