@@ -97,9 +97,9 @@
                                 </div>
                             </div>
                         </div>
-                        <template x-if="landing.about_image_url">
-                            <img :src="landing.about_image_url" :alt="aboutImageAlt()" width="800" height="600" loading="lazy" decoding="async" @error="$el.style.display='none'">
-                        </template>
+                        <div class="about-photo">
+                            <img :src="aboutImageUrl()" :alt="aboutImageAlt()" class="about-photo-img" width="800" height="1000" loading="lazy" decoding="async">
+                        </div>
                     </div>
                 </div>
             </section>
@@ -277,9 +277,13 @@
                     return t ? t + ' — entrenamiento personal en Estepona' : 'Mario Personal Trainer — entrenador personal en Estepona';
                 },
 
+                aboutImageUrl() {
+                    const url = (this.landing.about_image_url || '').trim();
+                    return url || '/images/foto-mario.png';
+                },
+
                 aboutImageAlt() {
-                    const t = (this.landing.about_title || '').trim();
-                    return t ? t + ', Estepona' : 'Mario Personal Trainer, Estepona';
+                    return 'Mario, entrenador personal en Estepona';
                 },
 
                 displayPhone() {

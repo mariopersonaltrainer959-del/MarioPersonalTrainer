@@ -213,9 +213,12 @@ body.landing-page {
 }
 
 .about-content {
-  max-width: 720px;
-  margin: 32px auto 0;
   text-align: left;
+}
+
+.about-grid .about-content {
+  max-width: none;
+  margin: 0;
 }
 
 .about-content p {
@@ -234,12 +237,27 @@ body.landing-page {
   text-align: left;
 }
 
-.about-grid img {
+.about-photo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.about-photo-img {
   width: 100%;
+  max-width: 400px;
+  max-height: 520px;
   border-radius: var(--radius);
-  border: 1px solid rgba(201, 168, 76, 0.2);
-  max-height: 320px;
+  border: 1px solid rgba(201, 168, 76, 0.25);
   object-fit: cover;
+  object-position: center top;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.45);
+}
+
+.about-content .stats-row {
+  justify-content: flex-start;
+  gap: 36px;
+  margin-top: 28px;
 }
 
 .services-grid {

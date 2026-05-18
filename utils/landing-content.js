@@ -11,7 +11,7 @@ const DEFAULT_LANDING = {
   about_title: 'Nuestra forma de trabajar',
   about_text:
     'Cada persona es distinta. Por eso diseño sesiones personalizadas, con seguimiento cercano y objetivos claros. Ya sea tu primera vez en el gimnasio o quieras dar un salto de rendimiento, te acompaño paso a paso en Global Salud (Estepona).',
-  about_image_url: '',
+  about_image_url: '/images/foto-mario.png',
   cta_text: 'Reservar entreno',
   contact_address_line1: 'C/ Eslovenia, 5',
   contact_address_line2: '29680 Estepona, Málaga',
@@ -35,7 +35,9 @@ function mergeLandingDefaults(stored) {
   const out = { ...DEFAULT_LANDING };
   for (const k of Object.keys(DEFAULT_LANDING)) {
     if (Object.prototype.hasOwnProperty.call(s, k) && s[k] !== undefined) {
-      out[k] = s[k];
+      const v = s[k];
+      if (k === 'about_image_url' && (v === '' || v == null)) continue;
+      out[k] = v;
     }
   }
   for (const k of Object.keys(s)) {
