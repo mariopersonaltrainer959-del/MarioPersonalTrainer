@@ -156,6 +156,8 @@ async function initPostgres() {
       precio_base REAL NOT NULL,
       iva_pct REAL NOT NULL DEFAULT 21,
       iva_eur REAL NOT NULL,
+      irpf_pct REAL NOT NULL DEFAULT 0,
+      irpf_eur REAL NOT NULL DEFAULT 0,
       total REAL NOT NULL,
       forma_pago TEXT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

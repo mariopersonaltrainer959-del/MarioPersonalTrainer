@@ -566,8 +566,9 @@
                                 <h3 class="font-semibold text-gray-900 mb-3 flex items-center gap-2"><span class="text-lg">€</span> Concepto y Precio</h3>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">Concepto *</label><input type="text" x-model="facturaForm.concepto" class="input-modern" required placeholder="Sesión de psicología"></div>
-                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Total pagado por el cliente (€) *</label><input type="number" step="0.01" min="0" x-model="facturaForm.totalPagado" @input="actualizarResumenFactura()" class="input-modern" required placeholder="60"></div>
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Importe total (base + IVA) (€) *</label><input type="number" step="0.01" min="0" x-model="facturaForm.totalPagado" @input="actualizarResumenFactura()" class="input-modern" required placeholder="60"><p class="text-xs text-gray-500 mt-1">Con retención IRPF, el cliente te ingresa el líquido (total menos la retención).</p></div>
                                     <div><label class="block text-sm font-medium text-gray-700 mb-1">IVA (%)</label><input type="number" step="1" min="0" max="100" x-model="facturaForm.ivaPct" @input="actualizarResumenFactura()" class="input-modern" placeholder="21"></div>
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Retención IRPF (%)</label><input type="number" step="0.01" min="0" max="100" x-model="facturaForm.irpfPct" @input="actualizarResumenFactura()" class="input-modern" placeholder="7"><p class="text-xs text-gray-500 mt-1">Pon 0 si no aplica retención.</p></div>
                                     <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label><input type="text" x-model="facturaForm.descripcion" class="input-modern" placeholder="Sesión individual 50 min"></div>
                                     <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">Forma de pago</label><input type="text" x-model="facturaForm.forma_pago" class="input-modern" placeholder="Transferencia bancaria"></div>
                                 </div>
@@ -576,7 +577,9 @@
                                 <h3 class="font-semibold text-gray-900 mb-3">Resumen de la Factura</h3>
                                 <p class="text-sm text-gray-600">Precio base: <span x-text="resumenFactura.precioBase"></span></p>
                                 <p class="text-sm text-gray-600">IVA (<span x-text="resumenFactura.ivaPct"></span>%): <span x-text="resumenFactura.ivaEur"></span></p>
-                                <p class="font-semibold text-[var(--primary-color)] mt-2">Total: <span x-text="resumenFactura.total"></span></p>
+                                <p class="text-sm text-gray-600" x-show="resumenFactura.irpfPct > 0">Retención IRPF (<span x-text="resumenFactura.irpfPct"></span>%): <span x-text="resumenFactura.irpfEur"></span></p>
+                                <p class="font-semibold text-[var(--primary-color)] mt-2">Total factura: <span x-text="resumenFactura.total"></span></p>
+                                <p class="text-sm font-medium text-gray-800 mt-1" x-show="resumenFactura.irpfPct > 0">Total a ingresar (líquido): <span x-text="resumenFactura.liquido"></span></p>
                             </div>
                             <button type="submit" :disabled="savingFactura" class="btn-primary">
                                 <span x-show="!savingFactura">Crear Factura</span>
@@ -1107,9 +1110,9 @@
                 facturas: [],
                 facturaForm: {
                     cliente_nombre: '', cliente_nif: '', cliente_direccion: '', cliente_cp: '', cliente_ciudad: '', cliente_provincia: '',
-                    concepto: '', descripcion: '', totalPagado: '', ivaPct: '21', forma_pago: ''
+                    concepto: '', descripcion: '', totalPagado: '', ivaPct: '21', irpfPct: '7', forma_pago: ''
                 },
-                resumenFactura: { precioBase: '0,00 €', ivaPct: 21, ivaEur: '0,00 €', total: '0,00 €' },
+                resumenFactura: { precioBase: '0,00 €', ivaPct: 21, ivaEur: '0,00 €', irpfPct: 7, irpfEur: '0,00 €', total: '0,00 €', liquido: '0,00 €' },
                 savingFactura: false,
                 facturaMessage: '',
 
@@ -1918,14 +1921,23 @@
 
                 actualizarResumenFactura() {
                     const total = parseFloat(this.facturaForm.totalPagado) || 0;
-                    const ivaPct = parseFloat(this.facturaForm.ivaPct) || 21;
-                    const precioBase = total / (1 + ivaPct / 100);
+                    const ivaPct = parseFloat(this.facturaForm.ivaPct);
+                    const ivaNum = Number.isFinite(ivaPct) ? ivaPct : 21;
+                    const irpfRaw = this.facturaForm.irpfPct;
+                    const irpfPct = irpfRaw === '' || irpfRaw == null ? 7 : (parseFloat(irpfRaw) || 0);
+                    const precioBase = total / (1 + ivaNum / 100);
                     const ivaEur = total - precioBase;
+                    const irpfEur = irpfPct > 0 ? Math.round(precioBase * irpfPct / 100 * 100) / 100 : 0;
+                    const liquido = Math.round((total - irpfEur) * 100) / 100;
+                    const fmt = (n) => n.toFixed(2).replace('.', ',') + ' €';
                     this.resumenFactura = {
-                        precioBase: precioBase.toFixed(2).replace('.', ',') + ' €',
-                        ivaPct: ivaPct,
-                        ivaEur: ivaEur.toFixed(2).replace('.', ',') + ' €',
-                        total: total.toFixed(2).replace('.', ',') + ' €'
+                        precioBase: fmt(precioBase),
+                        ivaPct: ivaNum,
+                        ivaEur: fmt(ivaEur),
+                        irpfPct,
+                        irpfEur: irpfPct > 0 ? ('-' + irpfEur.toFixed(2).replace('.', ',') + ' €') : '0,00 €',
+                        total: fmt(total),
+                        liquido: fmt(liquido)
                     };
                 },
                 formatEuroFactura(n) {
@@ -1968,7 +1980,7 @@
                         const data = await res.json();
                         if (data.success) {
                             this.facturaMessage = 'Factura ' + data.numero_factura + ' creada correctamente.';
-                            this.facturaForm = { cliente_nombre: '', cliente_nif: '', cliente_direccion: '', cliente_cp: '', cliente_ciudad: '', cliente_provincia: '', concepto: '', descripcion: '', totalPagado: '', ivaPct: '21', forma_pago: '' };
+                            this.facturaForm = { cliente_nombre: '', cliente_nif: '', cliente_direccion: '', cliente_cp: '', cliente_ciudad: '', cliente_provincia: '', concepto: '', descripcion: '', totalPagado: '', ivaPct: '21', irpfPct: '7', forma_pago: '' };
                             this.actualizarResumenFactura();
                             await this.loadFacturas();
                         } else {
